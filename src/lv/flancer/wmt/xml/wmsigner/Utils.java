@@ -17,7 +17,8 @@ public class Utils {
 	 * массива байтов.
 	 * 
 	 * @param input
-	 * @return
+	 * @return последовательность байтов, являющаяся MD4-хэшем для входной
+	 *         последовательности байтов.
 	 */
 	public static byte[] calcMd4(byte[] input) {
 		MessageDigest md4 = MD4.getInstance();
@@ -28,14 +29,12 @@ public class Utils {
 	}
 
 	/**
-	 * Из 4-хбайтового массива образует unsigned int и возвращает его в виде int
-	 * (ВНИМАНИЕ: при достаточно больших значениях результат станет
-	 * отрицательным!!! Чтобы этого не происходило, результат нужно возвращать в
-	 * виде long). Предполагается, что байты в массиве стоят в порядке
-	 * little-endian (от младшего к старшему).
+	 * Из 4-хбайтового массива образует int и возвращает его обратно,
+	 * предполагается, что байты в массиве стоят в порядке little-endian (от
+	 * младшего к старшему).
 	 * 
 	 * @param bytes
-	 * @return
+	 * @return соответствующее целочисленное значение.
 	 */
 	public static int convertBytesToUnsignedInt(byte[] bytes) {
 		int b1 = (0x000000FF & ((int) bytes[0]));
@@ -52,7 +51,7 @@ public class Utils {
 	 * в порядке little-endian (от младшего к старшему).
 	 * 
 	 * @param bytes
-	 * @return
+	 * @return соответствующее целочисленное значение.
 	 */
 	public static int convertBytesToUnsignedShort(byte[] bytes) {
 		int b1 = (0x000000FF & ((int) bytes[0]));
