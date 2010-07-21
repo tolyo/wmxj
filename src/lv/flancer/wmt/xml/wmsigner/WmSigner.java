@@ -293,8 +293,11 @@ public class WmSigner {
 		String result = null;
 		// подгружаем ключи для подписи
 		this.loadKeys();
-		// генерируем подпись
-		byte[] signature = this.generateSignature(textToSign.getBytes());
+		// генерируем подпись, переводя полученную строку в последовательность
+		// символов в кодировке Cp-1251 (иначе на кириллице генерируется
+		// неправильная подпись).
+		byte[] signature = this
+				.generateSignature(textToSign.getBytes("Cp1251"));
 		String swapped = DatatypeConverter.printHexBinary(signature)
 				.toLowerCase();
 		// рекомбинируем байты чтобы получилось что-то другое
