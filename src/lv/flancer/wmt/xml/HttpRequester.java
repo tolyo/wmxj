@@ -1,7 +1,7 @@
 /**
  * 
  */
-package lv.flancer.wmt.xml.http;
+package lv.flancer.wmt.xml;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -219,11 +219,10 @@ public class HttpRequester {
 	}
 
 	/**
-	 * Посылает серверу GET-запрос по адресу requestAddress. Кодировка запроса и
-	 * ответа - Windows-1251.
+	 * Посылает серверу GET-запрос по адресу requestAddress.
 	 * 
 	 * @param requestAddress
-	 * @return
+	 * @return http-ответ, полученный от сервера
 	 * @throws IOException
 	 * @throws NoSuchAlgorithmException
 	 * @throws KeyManagementException
@@ -239,7 +238,7 @@ public class HttpRequester {
 	 * вызывающая сторона
 	 * 
 	 * @param requestAddress
-	 * @return
+	 * @return http-ответ, полученный от сервера
 	 * @throws IOException
 	 * @throws NoSuchAlgorithmException
 	 * @throws KeyManagementException

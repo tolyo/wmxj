@@ -9,6 +9,8 @@ import java.util.Random;
 
 import javax.xml.bind.DatatypeConverter;
 
+import lv.flancer.wmt.xml.dict.Wmid;
+
 /**
  * <p>
  * Имплементация модуля аутентификации <a
@@ -99,7 +101,7 @@ public class WmSigner {
 	/**
 	 * WMID ключа, которым подписывается запрос.
 	 */
-	private String wmid;
+	private Wmid wmid;
 
 	/**
 	 * Непосредственная генерация подписи для массива байтов.
@@ -173,7 +175,7 @@ public class WmSigner {
 	 * 
 	 * @return WMID ключа, которым подписывается запрос.
 	 */
-	public String getWmid() {
+	public Wmid getWmid() {
 		return wmid;
 	}
 
@@ -193,9 +195,9 @@ public class WmSigner {
 		// если ключи не подгружены
 		if (this.kwmData == null) {
 			KwmExtractor extractor = new KwmExtractor();
-			extractor.setSignerWmid(this.wmid);
+			extractor.setSignerWmid(this.wmid.getValue());
 			extractor.setKeyPassword(this.keyPassword);
-			// анализируем проинициализированные атрибуты и выбираем метод
+			// анализируем инициализированные атрибуты и выбираем метод
 			// извлечения ключа - из base64-строки или из kwm-файла
 			if (this.base64Key != null) {
 				// Ключ в виде base64-кодированной строки имеет преимущество
@@ -252,6 +254,16 @@ public class WmSigner {
 	 *            WMID ключа, которым подписывается запрос.
 	 */
 	public void setWmid(String wmid) {
+		this.wmid = new Wmid(wmid);
+	}
+
+	/**
+	 * WMID ключа, которым подписывается запрос.
+	 * 
+	 * @param wmid
+	 *            WMID ключа, которым подписывается запрос.
+	 */
+	public void setWmid(Wmid wmid) {
 		this.wmid = wmid;
 	}
 
