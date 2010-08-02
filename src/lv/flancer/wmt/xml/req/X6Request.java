@@ -6,7 +6,7 @@ package lv.flancer.wmt.xml.req;
 import lv.flancer.wmt.xml.dict.Wmid;
 
 /**
- * Интерфейс X6. Отправка сообщения произвольному WM-идентификатору по
+ * Интерфейс X6: Отправка сообщения произвольному WM-идентификатору по
  * внутренней почте.
  * 
  * @author Alex Gusev <flancer64@gmail.com>

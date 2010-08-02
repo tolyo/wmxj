@@ -17,6 +17,10 @@ public abstract class AbstractResponse {
 	 * Код выполнения запроса.
 	 */
 	private int retVal;
+	/**
+	 * Номер запроса.
+	 */
+	private long requestNum;
 
 	public AbstractResponse() {
 		super();
@@ -69,6 +73,35 @@ public abstract class AbstractResponse {
 	public void setRetVal(String retVal) {
 		this.retVal = Integer.parseInt(retVal);
 
+	}
+
+	/**
+	 * Номер запроса.
+	 * 
+	 * @return Номер запроса.
+	 */
+	public long getRequestNum() {
+		return requestNum;
+	}
+
+	/**
+	 * Номер запроса.
+	 * 
+	 * @param requestNum
+	 *            Номер запроса.
+	 */
+	public void setRequestNum(long requestNum) {
+		this.requestNum = requestNum;
+	}
+
+	/**
+	 * Номер запроса.
+	 * 
+	 * @param requestNum
+	 *            Номер запроса.
+	 */
+	public void setRequestNum(String requestNum) {
+		this.requestNum = Long.parseLong(requestNum);
 	}
 
 }

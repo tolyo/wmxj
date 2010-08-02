@@ -31,10 +31,12 @@ public interface XmlRequest {
 	public String getXmlRequest();
 
 	/**
-	 * Подпись запроса.
+	 * Устанавливает для запроса подпись, созданную при помощи WmSigner'а
+	 * (авторизация по схеме Classic).
 	 * 
 	 * @param signature
-	 *            Подпись запроса.
+	 *            Устанавливает для запроса подпись, созданную при помощи
+	 *            WmSigner'а (авторизация по схеме Classic).
 	 */
 	public void setSign(String signature);
 

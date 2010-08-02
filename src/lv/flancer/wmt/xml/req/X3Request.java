@@ -7,7 +7,7 @@ import lv.flancer.wmt.xml.dict.PurseNumber;
 import lv.flancer.wmt.xml.dict.WmDate;
 
 /**
- * Интерфейс X3. Получение истории операций по кошельку. Проверка выполнения
+ * Интерфейс X3: Получение истории операций по кошельку. Проверка выполнения
  * операции по переводу средств.
  * 
  * @author Alex Gusev <flancer64@gmail.com>

@@ -12,12 +12,11 @@ import lv.flancer.wmt.xml.resp.X3Response;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * X3. Получение истории операций по кошельку. Проверка выполнения операции по
- * переводу средств.
+ * Интерфейс X3: Получение истории операций по кошельку. Проверка выполнения
+ * операции по переводу средств.
  * 
  * @author Alex Gusev <flancer64@gmail.com>
  * @version 1.0
@@ -184,18 +183,15 @@ public class X3ResponseHandler extends DefaultHandler {
 		}
 		// создаем список операций
 		if (qName.equals("operations")) {
-			int cnt = Integer.parseInt(attributes.getValue("cnt"));
-			this.response.setCount(cnt);
+			this.response.setCount(attributes.getValue("cnt"));
 			this.operationList = new ArrayList<Operation>();
 		}
 		// начало разбора отдельной операции
 		if (qName.equals("operation")) {
 			this.isOperationElementBeingParsed = true;
 			this.operation = new Operation();
-			int id = Integer.parseInt(attributes.getValue("id"));
-			this.operation.setId(id);
-			int ts = Integer.parseInt(attributes.getValue("ts"));
-			this.operation.setTs(ts);
+			this.operation.setId(attributes.getValue("id"));
+			this.operation.setTs(attributes.getValue("ts"));
 
 		}
 		// начало разбора HTML encoded деталей платежа
@@ -203,11 +199,6 @@ public class X3ResponseHandler extends DefaultHandler {
 			this.isHtmlEncodedBeingParsed = true;
 			this.parsedValue = "";
 		}
-	}
-
-	@Override
-	public void warning(SAXParseException e) throws SAXException {
-		super.warning(e);
 	}
 
 }

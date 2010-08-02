@@ -60,15 +60,7 @@ import lv.flancer.wmt.xml.dict.Wmid;
  * ключом.
  * </p>
  * 
- * <p>
- * При создании подписи перевод строки 'textToSign' в байты WmSigner
- * осуществляет без указания какой-либо кодировки, а т.к. сервис WM XML
- * распознает только Windows-1251, могут быть сбои, если во входной строке есть
- * символы, которые не перекодируются в Windows-1251. Ответственность за
- * перекодирование строки должна лежать на вызывающем классе.
- * </p>
- * 
- * @author Alex Gusev <alex@flancer.lv>
+ * @author Alex Gusev <flancer64@gmail.com>
  * @version 1.0
  */
 public class WmSigner {

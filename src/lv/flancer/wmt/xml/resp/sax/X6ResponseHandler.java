@@ -3,28 +3,30 @@
  */
 package lv.flancer.wmt.xml.resp.sax;
 
-import lv.flancer.wmt.xml.resp.X7Response;
+import lv.flancer.wmt.xml.resp.AbstractResponse;
+import lv.flancer.wmt.xml.resp.X6Response;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Интерфейс X7: Проверка АСП клиента - владельца WM Keeper Classic.
+ * Интерфейс X6: Отправка сообщения произвольному WM-идентификатору по
+ * внутренней почте.
  * 
  * @author Alex Gusev <flancer64@gmail.com>
  * @version 1.0
  * 
  */
-public class X7ResponseHandler extends DefaultHandler {
-	/**
-	 * Разобранный ответ от XML сервиса.
-	 */
-	private X7Response response;
+public class X6ResponseHandler extends DefaultHandler {
 	/**
 	 * Значение текущего разобранного элемента xml-документа.
 	 */
 	private String parsedValue;
+	/**
+	 * Разобранный ответ от XML сервиса.
+	 */
+	private X6Response response;
 
 	@Override
 	public void characters(char[] ch, int start, int length)
@@ -44,13 +46,25 @@ public class X7ResponseHandler extends DefaultHandler {
 			this.response.setRetDesc(this.parsedValue);
 			return;
 		}
-		if (qName.equals("cwmid")) {
-			this.response.setCwmid(this.parsedValue);
+		if (qName.equals("reqn")) {
+			this.response.setRequestNum(this.parsedValue);
 			return;
 		}
-		// разбор подмножества элемента "w3s.response/testsign"
-		if (qName.equals("res")) {
-			this.response.setRes(this.parsedValue.equals("yes"));
+		// разбор подмножества элемента "w3s.response/message"
+		if (qName.equals("receiverwmid")) {
+			this.response.setReceiverWmid(this.parsedValue);
+			return;
+		}
+		if (qName.equals("msgsubj")) {
+			this.response.setMsgSubj(this.parsedValue);
+			return;
+		}
+		if (qName.equals("msgtext")) {
+			this.response.setMsgText(this.parsedValue);
+			return;
+		}
+		if (qName.equals("datecrt")) {
+			this.response.setDateCrt(this.parsedValue);
 			return;
 		}
 	}
@@ -60,7 +74,7 @@ public class X7ResponseHandler extends DefaultHandler {
 	 * 
 	 * @return Разобранный ответ от XML сервиса.
 	 */
-	public X7Response getResponse() {
+	public AbstractResponse getResponse() {
 		return response;
 	}
 
@@ -69,7 +83,11 @@ public class X7ResponseHandler extends DefaultHandler {
 			Attributes attributes) throws SAXException {
 		// создаем новый экземпляр ответа
 		if (qName.equals("w3s.response")) {
-			this.response = new X7Response();
+			this.response = new X6Response();
+		}
+		// задаем Id сообщения
+		if (qName.equals("message")) {
+			this.response.setId(attributes.getValue("id"));
 		}
 	}
 }

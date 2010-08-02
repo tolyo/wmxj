@@ -3,7 +3,7 @@ package lv.flancer.wmt.xml.req;
 import lv.flancer.wmt.xml.dict.Wmid;
 
 /**
- * Абстрактный класс, инкапсулирующий часто используемые поля и методы запроса.
+ * Базовый класс для создания запросов.
  * 
  * @author Alex Gusev <flancer64@gmail.com>
  * @version 1.0

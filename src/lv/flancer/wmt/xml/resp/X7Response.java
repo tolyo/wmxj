@@ -6,7 +6,7 @@ package lv.flancer.wmt.xml.resp;
 import lv.flancer.wmt.xml.dict.Wmid;
 
 /**
- * X7. Проверка АСП клиента - владельца WM Keeper Classic.
+ * Интерфейс X7: Проверка АСП клиента - владельца WM Keeper Classic.
  * 
  * @author Alex Gusev <flancer64@gmail.com>
  * @version 1.0

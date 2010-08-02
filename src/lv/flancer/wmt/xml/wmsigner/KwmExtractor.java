@@ -14,7 +14,7 @@ import javax.xml.bind.DatatypeConverter;
  * Класс, отвечающий за распаковку необходимых данных из kwm-файла или из
  * base64-кодированной строки с ключом WM Classic.
  * 
- * @author Alex Gusev <alex@flancer.lv>
+ * @author Alex Gusev <flancer64@gmail.com>
  * @version 1.0
  */
 public class KwmExtractor {

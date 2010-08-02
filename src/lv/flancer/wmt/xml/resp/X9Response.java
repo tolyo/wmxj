@@ -5,26 +5,26 @@ package lv.flancer.wmt.xml.resp;
 
 import java.util.List;
 
-import lv.flancer.wmt.xml.dict.Operation;
+import lv.flancer.wmt.xml.dict.WmPurse;
 
 /**
- * Интерфейс X3: Получение истории операций по кошельку. Проверка выполнения
- * операции по переводу средств.
+ * Интерфейс X9: Получение информации о балансе на кошельках.
  * 
  * @author Alex Gusev <flancer64@gmail.com>
  * @version 1.0
  * 
  */
-public class X3Response extends AbstractResponse {
+public class X9Response extends AbstractResponse {
+
 	/**
 	 * Количество найденных платежей, удовлетворяющих запросу (атрибут
 	 * w3s.response/operations:cnt).
 	 */
 	private int count;
 	/**
-	 * Список платежей, полученных по запросу.
+	 * Список кошельков и остатков на них, полученный по запросу.
 	 */
-	private List<Operation> operationList;
+	private List<WmPurse> purseList;
 
 	/**
 	 * Количество найденных платежей, удовлетворяющих запросу (атрибут
@@ -38,12 +38,12 @@ public class X3Response extends AbstractResponse {
 	}
 
 	/**
-	 * Список платежей, полученных по запросу.
+	 * Список кошельков и остатков на них, полученный по запросу.
 	 * 
-	 * @return Список платежей, полученных по запросу.
+	 * @return Список кошельков и остатков на них, полученный по запросу.
 	 */
-	public List<Operation> getOperationList() {
-		return operationList;
+	public List<WmPurse> getPurseList() {
+		return purseList;
 	}
 
 	/**
@@ -71,12 +71,13 @@ public class X3Response extends AbstractResponse {
 	}
 
 	/**
-	 * Список платежей, полученных по запросу.
+	 * Список кошельков и остатков на них, полученный по запросу.
 	 * 
-	 * @param operationList
-	 *            Список платежей, полученных по запросу.
+	 * @param purseList
+	 *            Список кошельков и остатков на них, полученный по запросу.
 	 */
-	public void setOperationList(List<Operation> operationList) {
-		this.operationList = operationList;
+	public void setPurseList(List<WmPurse> purseList) {
+		this.purseList = purseList;
 	}
+
 }
