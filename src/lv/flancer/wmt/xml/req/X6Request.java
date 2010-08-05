@@ -61,8 +61,9 @@ public class X6Request extends AbstractRequest {
 
 	@Override
 	public String getTextToSign() {
-		String result = this.receiverWmid.getValue();
-		result += String.valueOf(requestNum);
+		String result = "";
+		result += this.receiverWmid;
+		result += requestNum;
 		result += this.msgText;
 		result += this.msgSubj;
 		return result;
@@ -72,31 +73,24 @@ public class X6Request extends AbstractRequest {
 	public String getXmlRequest() {
 		String result = "<?xml version=\"1.0\"  encoding=\"windows-1251\"?>";
 		result += "<w3s.request>";
-		// reqn
 		result += "<reqn>" + this.requestNum + "</reqn>";
-		// signer wmid
 		if (this.signerWmid != null) {
 			result += "<wmid>" + this.signerWmid + "</wmid>";
 		} else {
 			result += "<wmid />";
 		}
-		// sign
 		if (this.sign != null) {
 			result += "<sign>" + this.sign + "</sign>";
 		} else {
 			result += "<sign />";
 		}
-		// message
 		result += "<message>";
-		// receiver wmid
 		result += "<receiverwmid>" + this.receiverWmid + "</receiverwmid>";
-		// message subject
 		if (this.msgSubj != null) {
 			result += "<msgsubj>" + this.msgSubj + "</msgsubj>";
 		} else {
 			result += "<msgsubj />";
 		}
-		// message text
 		if (this.msgText != null) {
 			result += "<msgtext>" + this.msgText + "</msgtext>";
 		} else {

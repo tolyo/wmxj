@@ -12,22 +12,38 @@ import javax.xml.parsers.SAXParserFactory;
 import lv.flancer.wmt.xml.dict.PurseNumber;
 import lv.flancer.wmt.xml.dict.WmDate;
 import lv.flancer.wmt.xml.dict.Wmid;
+import lv.flancer.wmt.xml.dict.X18AuthType;
 import lv.flancer.wmt.xml.req.RequestNumberGenerator;
+import lv.flancer.wmt.xml.req.X10Request;
+import lv.flancer.wmt.xml.req.X18Request;
+import lv.flancer.wmt.xml.req.X1Request;
 import lv.flancer.wmt.xml.req.X2Request;
 import lv.flancer.wmt.xml.req.X3Request;
+import lv.flancer.wmt.xml.req.X4Request;
+import lv.flancer.wmt.xml.req.X5Request;
 import lv.flancer.wmt.xml.req.X6Request;
 import lv.flancer.wmt.xml.req.X7Request;
 import lv.flancer.wmt.xml.req.X8Request;
 import lv.flancer.wmt.xml.req.X9Request;
 import lv.flancer.wmt.xml.req.XmlRequest;
-import lv.flancer.wmt.xml.resp.AbstractResponse;
+import lv.flancer.wmt.xml.resp.X10Response;
+import lv.flancer.wmt.xml.resp.X18Response;
+import lv.flancer.wmt.xml.resp.X1Response;
 import lv.flancer.wmt.xml.resp.X2Response;
 import lv.flancer.wmt.xml.resp.X3Response;
+import lv.flancer.wmt.xml.resp.X4Response;
+import lv.flancer.wmt.xml.resp.X5Response;
+import lv.flancer.wmt.xml.resp.X6Response;
 import lv.flancer.wmt.xml.resp.X7Response;
 import lv.flancer.wmt.xml.resp.X8Response;
 import lv.flancer.wmt.xml.resp.X9Response;
+import lv.flancer.wmt.xml.resp.sax.X10ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X18ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X1ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X2ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X3ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X4ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X5ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X6ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X7ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X8ResponseHandler;
@@ -82,6 +98,7 @@ public class WmService {
 
 	private final static String WMT_HOST_CLASSIC = "w3s.webmoney.ru";
 	private final static String WMT_HOST_LIGHT = "w3s.wmtransfer.com";
+	private final static String WMT_HOST_MERCHANT = "merchant.webmoney.ru";
 	/**
 	 * Содержит текстовый вариант HTTP-запроса, отправленного на сервис WMT XML.
 	 */
@@ -251,6 +268,215 @@ public class WmService {
 
 	/**
 	 * <p>
+	 * Простая форма для X1: Выписывание счета от одного участника (магазина,
+	 * ресурса) другому участнику (покупателю).
+	 * </p>
+	 * 
+	 * @param orderId
+	 *            Номер счета в системе учета магазина.
+	 * @param customerWmid
+	 *            Wmid покупателя.
+	 * @param storePurse
+	 *            Номер кошелька, но который необходимо оплатить счет.
+	 * @param amount
+	 *            Сумма счета, выставленная для оплаты покупателю.
+	 * @param desc
+	 *            Описание товара или услуги, на который выписывается счет.
+	 * @param address
+	 *            Адрес доставки товара.
+	 * @param period
+	 *            Максимально допустимый срок протекции сделки в днях при оплате
+	 *            счета.
+	 * @param expiration
+	 *            Максимально допустимый срок оплаты счета в днях.
+	 * @return X1Response
+	 * @throws Exception
+	 */
+	public X1Response x1(long orderId, String customerWmid, String storePurse,
+			double amount, String desc, String address, int period,
+			int expiration) throws Exception {
+		X1Request req = new X1Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setOrderId(orderId);
+		req.setCustomerWmid(customerWmid);
+		req.setStorePurse(storePurse);
+		req.setAmount(amount);
+		req.setDesc(desc);
+		req.setAddress(address);
+		req.setPeriod(period);
+		req.setExpiration(expiration);
+		return this.x1(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X1: Выписывание счета от одного участника
+	 * (магазина, ресурса) другому участнику (покупателю).
+	 * </p>
+	 * 
+	 * @param req
+	 *            X1Request
+	 * @return X1Response
+	 * @throws Exception
+	 */
+	public X1Response x1(X1Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_LIGHT;
+		String requestAddress = "/asp/XMLInvoiceCert.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X1Request) this.initSignature(req);
+			host = WMT_HOST_CLASSIC;
+			requestAddress = "/asp/XMLInvoice.asp";
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X1ResponseHandler hdl = new X1ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Минимальная форма для для X10: Получение списка счетов на оплату.
+	 * </p>
+	 * 
+	 * @param wmid
+	 *            WM-идентификатор, которому был выписан счет(-а) на оплату.
+	 * @param dateStart
+	 *            Минимальное время и дата создания счета.
+	 * @param dateFinish
+	 *            Максимальное время и дата создания счета.
+	 * @return X10Response
+	 * @throws Exception
+	 */
+	public X10Response x10(String wmid, Date dateStart, Date dateFinish)
+			throws Exception {
+		return this.x10(wmid, 0, dateStart, dateFinish);
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для для X10: Получение списка счетов на оплату.
+	 * </p>
+	 * 
+	 * @param wmid
+	 *            WM-идентификатор, которому был выписан счет(-а) на оплату.
+	 * @param wmInvId
+	 *            Номер счета в системе WebMoney.
+	 * @param dateStart
+	 *            Минимальное время и дата создания счета.
+	 * @param dateFinish
+	 *            Максимальное время и дата создания счета.
+	 * @return X10Response
+	 * @throws Exception
+	 */
+	public X10Response x10(String wmid, long wmInvId, Date dateStart,
+			Date dateFinish) throws Exception {
+		X10Request req = new X10Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setWmid(wmid);
+		req.setWmInvId(wmInvId);
+		req.setDateStart(dateStart);
+		req.setDateFinish(dateFinish);
+		return this.x10(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X10: Получение списка счетов на оплату.
+	 * </p>
+	 * 
+	 * @param req
+	 *            X10Request
+	 * @return X10Response
+	 * @throws Exception
+	 */
+	public X10Response x10(X10Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_LIGHT;
+		String requestAddress = "/asp/XMLInInvoicesCert.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X10Request) this.initSignature(req);
+			host = WMT_HOST_CLASSIC;
+			requestAddress = "/asp/XMLInInvoices.asp";
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X10ResponseHandler hdl = new X10ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для для X18: Получение деталей операции через WM Merchant.
+	 * </p>
+	 * 
+	 * @param wmid
+	 *            Wmid получателя платежа или доверенный WMID.
+	 * @param lmiPayeePurse
+	 *            Кошелек получателя платежа.
+	 * @param lmiPaymentNo
+	 *            Номер платежа.
+	 * @param secretKey
+	 *            Секретное слово из настроек кошелька lmi_payee_purse в сервисе
+	 *            merchant.webmoney.ru.
+	 * @param authType
+	 *            Тип аутентификации при запросе.
+	 * @return X18Response
+	 * @throws Exception
+	 */
+	public X18Response x18(String wmid, String lmiPayeePurse,
+			long lmiPaymentNo, String secretKey, X18AuthType authType)
+			throws Exception {
+		X18Request req = new X18Request();
+		req.setWmid(wmid);
+		req.setLmiPayeePurse(lmiPayeePurse);
+		req.setLmiPaymentNo(lmiPaymentNo);
+		req.setSecretKey(secretKey);
+		req.setAuthType(authType);
+		return this.x18(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X18: Получение деталей операции через WM Merchant.
+	 * </p>
+	 * 
+	 * @param req
+	 *            X18Request
+	 * @return X18Response
+	 * @throws Exception
+	 */
+	public X18Response x18(X18Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_MERCHANT;
+		String requestAddress = "/conf/xml/XMLTransGet.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if ((this.signer != null)
+				&& req.getAuthType() == X18AuthType.WM_SIGNER_AUTH) {
+			req = (X18Request) this.initSignature(req);
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X18ResponseHandler hdl = new X18ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
 	 * Минимальная форма для X2: Перевод средств с одного кошелька на другой.
 	 * </p>
 	 * 
@@ -295,12 +521,12 @@ public class WmService {
 	 *            Номер кошелька, на который выполняется перевод (получатель).
 	 * @param amount
 	 *            Сумма платежа.
+	 * @param desc
+	 *            Описание оплачиваемого товара или услуги.
 	 * @param period
 	 *            Срок протекции сделки в днях.
 	 * @param pcode
 	 *            Код протекции сделки.
-	 * @param desc
-	 *            Описание оплачиваемого товара или услуги.
 	 * @param wmInvId
 	 *            Номер счета в системе WebMoney, по которому выполняется
 	 *            перевод.
@@ -308,7 +534,7 @@ public class WmService {
 	 * @throws Exception
 	 */
 	public X2Response x2(long tranId, String purseSrc, String purseDest,
-			float amount, int period, String pcode, String desc, long wmInvId)
+			double amount, String desc, int period, String pcode, long wmInvId)
 			throws Exception {
 		X2Request req = new X2Request();
 		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
@@ -372,7 +598,7 @@ public class WmService {
 			throws Exception {
 		X3Request req = new X3Request();
 		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
-		req.setPurseNumber(new PurseNumber(purse));
+		req.setPurse(new PurseNumber(purse));
 		req.setDateStart(new WmDate(dateStart));
 		req.setDateFinish(new WmDate(dateFinish));
 		return this.x3(req);
@@ -407,7 +633,7 @@ public class WmService {
 			throws Exception {
 		X3Request req = new X3Request();
 		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
-		req.setPurseNumber(new PurseNumber(purse));
+		req.setPurse(new PurseNumber(purse));
 		req.setDateStart(new WmDate(dateStart));
 		req.setDateFinish(new WmDate(dateFinish));
 		req.setWmTranId(wmTranId);
@@ -450,6 +676,147 @@ public class WmService {
 
 	/**
 	 * <p>
+	 * Минимальная форма для X4: Получение истории выписанных счетов по
+	 * кошельку. Проверка оплаты счета.
+	 * </p>
+	 * 
+	 * @param purse
+	 *            Номер кошелька для оплаты на который выписывался счет.
+	 * @param dateStart
+	 *            Максимальное время и дата создания счета.
+	 * @param dateFinish
+	 *            Минимальное время и дата создания счета.
+	 * @return X4Response
+	 * @throws Exception
+	 */
+	public X4Response x4(String purse, Date dateStart, Date dateFinish)
+			throws Exception {
+		X4Request req = new X4Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setPurse(purse);
+		req.setWmInvId(0);
+		req.setOrderId(0);
+		req.setDateStart(dateStart);
+		req.setDateFinish(dateFinish);
+		return this.x4(req);
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для X4: Получение истории выписанных счетов по кошельку.
+	 * Проверка оплаты счета.
+	 * </p>
+	 * 
+	 * @param purse
+	 *            Номер кошелька для оплаты на который выписывался счет.
+	 * @param wmInvId
+	 *            Номер счета в системе WebMoney.
+	 * @param orderId
+	 *            Номер счета в системе учета магазина.
+	 * @param dateStart
+	 *            Максимальное время и дата создания счета.
+	 * @param dateFinish
+	 *            Минимальное время и дата создания счета.
+	 * @return X4Response
+	 * @throws Exception
+	 */
+	public X4Response x4(String purse, long wmInvId, long orderId,
+			Date dateStart, Date dateFinish) throws Exception {
+		X4Request req = new X4Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setPurse(purse);
+		req.setWmInvId(wmInvId);
+		req.setOrderId(orderId);
+		req.setDateStart(dateStart);
+		req.setDateFinish(dateFinish);
+		return this.x4(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X4: Получение истории выписанных счетов по
+	 * кошельку. Проверка оплаты счета.
+	 * </p>
+	 * 
+	 * @param req
+	 *            X4Request
+	 * @return X4Response
+	 * @throws Exception
+	 */
+	public X4Response x4(X4Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_LIGHT;
+		String requestAddress = "/asp/XMLOutInvoicesCert.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X4Request) this.initSignature(req);
+			host = WMT_HOST_CLASSIC;
+			requestAddress = "/asp/XMLOutInvoices.asp";
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X4ResponseHandler hdl = new X4ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для X5: Завершение операции с протекцией сделки. Ввод кода
+	 * протекции.
+	 * </p>
+	 * 
+	 * @param wmTranId
+	 *            Уникальный номер платежа в системе учета WebMoney.
+	 * @param pCode
+	 *            Код протекции сделки.
+	 * @return X5Response
+	 * @throws Exception
+	 */
+	public X5Response x5(long wmTranId, String pCode) throws Exception {
+		X5Request req = new X5Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setWmTranId(wmTranId);
+		req.setPcode(pCode);
+		return this.x5(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X5: Завершение операции с протекцией сделки. Ввод
+	 * кода протекции.
+	 * </p>
+	 * 
+	 * @param req
+	 *            X5Request
+	 * @return X5Response
+	 * @throws Exception
+	 */
+	public X5Response x5(X5Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_LIGHT;
+		String requestAddress = "/asp/XMLFinishProtectCert.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X5Request) this.initSignature(req);
+			host = WMT_HOST_CLASSIC;
+			requestAddress = "/asp/XMLFinishProtect.asp";
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X5ResponseHandler hdl = new X5ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
 	 * Простая форма для X6: Отправка сообщения произвольному WM-идентификатору
 	 * по внутренней почте.
 	 * </p>
@@ -463,8 +830,8 @@ public class WmService {
 	 * @return X6Response
 	 * @throws Exception
 	 */
-	public AbstractResponse x6(String receiverWmid, String msgSubj,
-			String msgText) throws Exception {
+	public X6Response x6(String receiverWmid, String msgSubj, String msgText)
+			throws Exception {
 		X6Request req = new X6Request();
 		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
 		req.setReceiverWmid(new Wmid(receiverWmid));
@@ -484,7 +851,7 @@ public class WmService {
 	 * @return X6Response
 	 * @throws Exception
 	 */
-	public AbstractResponse x6(X6Request req) throws Exception {
+	public X6Response x6(X6Request req) throws Exception {
 		// авторизация по схеме Light
 		String host = WMT_HOST_LIGHT;
 		String requestAddress = "/asp/XMLSendMsgCert.asp";
@@ -579,6 +946,7 @@ public class WmService {
 	 */
 	public X8Response x8(String wmid, String purse) throws Exception {
 		X8Request req = new X8Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
 		req.setWmid(wmid);
 		req.setPurse(purse);
 		return this.x8(req);
@@ -627,6 +995,7 @@ public class WmService {
 	 */
 	public X9Response x9(String wmid) throws Exception {
 		X9Request req = new X9Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
 		req.setWmid(wmid);
 		return this.x9(req);
 	}

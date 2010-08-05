@@ -14,13 +14,13 @@ public enum OperationType {
 	/**
 	 * Обычная (или с протекцией, завершенная успешно).
 	 */
-	OUT_NORMAL(0), /**
+	NORMAL(0), /**
 	 * С протекцией, не завершена.
 	 */
-	OUT_PROTECTED_INCOMPLETE(4), /**
+	PROTECTED_INCOMPLETE(4), /**
 	 * С протекцией, вернулась.
 	 */
-	OUT_PROTECTED_RETURNED(12), /**
+	PROTECTED_RETURNED(12), /**
 	 * Тип операции неопределен.
 	 */
 	UNKNOWN(-1);
@@ -28,17 +28,18 @@ public enum OperationType {
 	/**
 	 * Типизирует операцию по ее WMT-коду.
 	 * 
-	 * @param value
+	 * @param code
+	 *            код типа операции в системе WMT.
 	 * @return тип операции
 	 */
-	public static OperationType getByValue(int value) {
-		switch (value) {
+	public static OperationType getByValue(int code) {
+		switch (code) {
 		case 0:
-			return OUT_NORMAL;
+			return NORMAL;
 		case 4:
-			return OUT_PROTECTED_INCOMPLETE;
+			return PROTECTED_INCOMPLETE;
 		case 12:
-			return OUT_PROTECTED_RETURNED;
+			return PROTECTED_RETURNED;
 		}
 		return UNKNOWN;
 	}
@@ -46,38 +47,21 @@ public enum OperationType {
 	/**
 	 * Типизирует операцию по ее WMT-коду.
 	 * 
-	 * @param value
+	 * @param code
+	 *            код типа операции в системе WMT.
 	 * @return тип операции
 	 */
-	public static OperationType getByValue(String value) {
-		return getByValue(Integer.parseInt(value));
+	public static OperationType getByValue(String code) {
+		return getByValue(Integer.parseInt(code));
 	}
 
 	/**
 	 * Числовое значение типа операции в системе WMT.
 	 */
+	@SuppressWarnings("unused")
 	private int value;
 
 	private OperationType(int value) {
-		this.setValue(value);
-	}
-
-	/**
-	 * Числовое значение типа операции в системе WMT.
-	 * 
-	 * @return Числовое значение типа операции в системе WMT.
-	 */
-	public int getValue() {
-		return value;
-	}
-
-	/**
-	 * Числовое значение типа операции в системе WMT.
-	 * 
-	 * @param value
-	 *            Числовое значение типа операции в системе WMT.
-	 */
-	public void setValue(int value) {
 		this.value = value;
 	}
 }

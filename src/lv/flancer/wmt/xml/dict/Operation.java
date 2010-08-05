@@ -4,7 +4,7 @@
 package lv.flancer.wmt.xml.dict;
 
 /**
- * Представление операции из ответов X3.
+ * Представление операции (платежа) в системе WMT.
  * 
  * @author Alex Gusev <flancer64@gmail.com>
  * @version 1.0
@@ -39,16 +39,15 @@ public class Operation {
 	 * Уникальный номер платежа в системе учета WebMoney (атрибут
 	 * w3s.response/operations/operation:id).
 	 */
-	private int id;
+	private long id;
 	/**
 	 * Тип перевода (платежа).
 	 */
 	private OperationType operType;
 	/**
-	 * Номер счета в системе магазина, выдавшего счет, по которому выполняется
-	 * перевод.
+	 * Номер счета в системе магазина, выписавшего счет (если перевод по счету).
 	 */
-	private int orderId;
+	private long orderId;
 	/**
 	 * Срок протекции сделки в днях. Целое число от 0 до 255. Если 0 - операция
 	 * без протекции сделки.
@@ -69,17 +68,17 @@ public class Operation {
 	/**
 	 * Номер перевода в системе учета отправителя.
 	 */
-	private int tranId;
+	private long tranId;
 	/**
 	 * Служебный номер платежа в системе учета WebMoney (атрибут
 	 * w3s.response/operations/operation:ts).
 	 */
-	private int ts;
+	private long ts;
 
 	/**
 	 * Номер счета в системе WebMoney, по которому выполняется перевод.
 	 */
-	private int wmInvId;
+	private long wmInvId;
 
 	/**
 	 * Сумма платежа.
@@ -142,7 +141,7 @@ public class Operation {
 	 * @return Уникальный номер платежа в системе учета WebMoney (атрибут
 	 *         w3s.response/operations/operation:id).
 	 */
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
@@ -156,13 +155,12 @@ public class Operation {
 	}
 
 	/**
-	 * Номер счета в системе магазина, выдавшего счет, по которому выполняется
-	 * перевод.
+	 * Номер счета в системе магазина, выписавшего счет (если перевод по счету).
 	 * 
-	 * @return Номер счета в системе магазина, выдавшего счет, по которому
-	 *         выполняется перевод.
+	 * @return Номер счета в системе магазина, выписавшего счет (если перевод по
+	 *         счету).
 	 */
-	public int getOrderId() {
+	public long getOrderId() {
 		return orderId;
 	}
 
@@ -208,7 +206,7 @@ public class Operation {
 	 * 
 	 * @return Номер перевода в системе учета отправителя.
 	 */
-	public int getTranId() {
+	public long getTranId() {
 		return tranId;
 	}
 
@@ -219,7 +217,7 @@ public class Operation {
 	 * @return Служебный номер платежа в системе учета WebMoney (атрибут
 	 *         w3s.response/operations/operation:ts).
 	 */
-	public int getTs() {
+	public long getTs() {
 		return ts;
 	}
 
@@ -228,7 +226,7 @@ public class Operation {
 	 * 
 	 * @return Номер счета в системе WebMoney, по которому выполняется перевод.
 	 */
-	public int getWmInvId() {
+	public long getWmInvId() {
 		return wmInvId;
 	}
 
@@ -350,7 +348,7 @@ public class Operation {
 	 *            Уникальный номер платежа в системе учета WebMoney (атрибут
 	 *            w3s.response/operations/operation:id).
 	 */
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 
@@ -363,7 +361,7 @@ public class Operation {
 	 *            w3s.response/operations/operation:id).
 	 */
 	public void setId(String id) {
-		this.id = Integer.parseInt(id);
+		this.id = Long.parseLong(id);
 	}
 
 	/**
@@ -377,27 +375,25 @@ public class Operation {
 	}
 
 	/**
-	 * Номер счета в системе магазина, выдавшего счет, по которому выполняется
-	 * перевод.
+	 * Номер счета в системе магазина, выписавшего счет (если перевод по счету).
 	 * 
 	 * @param orderId
-	 *            Номер счета в системе магазина, выдавшего счет, по которому
-	 *            выполняется перевод.
+	 *            Номер счета в системе магазина, выписавшего счет (если перевод
+	 *            по счету).
 	 */
-	public void setOrderId(int orderId) {
+	public void setOrderId(long orderId) {
 		this.orderId = orderId;
 	}
 
 	/**
-	 * Номер счета в системе магазина, выдавшего счет, по которому выполняется
-	 * перевод.
+	 * Номер счета в системе магазина, выписавшего счет (если перевод по счету).
 	 * 
 	 * @param orderId
-	 *            Номер счета в системе магазина, выдавшего счет, по которому
-	 *            выполняется перевод.
+	 *            Номер счета в системе магазина, выписавшего счет (если перевод
+	 *            по счету).
 	 */
 	public void setOrderId(String orderId) {
-		this.orderId = Integer.parseInt(orderId);
+		this.orderId = Long.parseLong(orderId);
 	}
 
 	/**
@@ -488,7 +484,7 @@ public class Operation {
 	 * @param tranId
 	 *            Номер перевода в системе учета отправителя.
 	 */
-	public void setTranId(int tranId) {
+	public void setTranId(long tranId) {
 		this.tranId = tranId;
 	}
 
@@ -499,7 +495,7 @@ public class Operation {
 	 *            Номер перевода в системе учета отправителя.
 	 */
 	public void setTranId(String tranId) {
-		this.tranId = Integer.parseInt(tranId);
+		this.tranId = Long.parseLong(tranId);
 	}
 
 	/**
@@ -510,7 +506,7 @@ public class Operation {
 	 *            Служебный номер платежа в системе учета WebMoney (атрибут
 	 *            w3s.response/operations/operation:ts).
 	 */
-	public void setTs(int ts) {
+	public void setTs(long ts) {
 		this.ts = ts;
 	}
 
@@ -523,7 +519,7 @@ public class Operation {
 	 *            w3s.response/operations/operation:ts).
 	 */
 	public void setTs(String ts) {
-		this.ts = Integer.parseInt(ts);
+		this.ts = Long.parseLong(ts);
 	}
 
 	/**
@@ -533,7 +529,7 @@ public class Operation {
 	 *            Номер счета в системе WebMoney, по которому выполняется
 	 *            перевод.
 	 */
-	public void setWmInvId(int wmInvId) {
+	public void setWmInvId(long wmInvId) {
 		this.wmInvId = wmInvId;
 	}
 
@@ -545,6 +541,6 @@ public class Operation {
 	 *            перевод.
 	 */
 	public void setWmInvId(String wmInvId) {
-		this.wmInvId = Integer.parseInt(wmInvId);
+		this.wmInvId = Long.parseLong(wmInvId);
 	}
 }

@@ -187,7 +187,7 @@ public class WmSigner {
 		// если ключи не подгружены
 		if (this.kwmData == null) {
 			KwmExtractor extractor = new KwmExtractor();
-			extractor.setSignerWmid(this.wmid.getValue());
+			extractor.setSignerWmid(this.wmid.toString());
 			extractor.setKeyPassword(this.keyPassword);
 			// анализируем инициализированные атрибуты и выбираем метод
 			// извлечения ключа - из base64-строки или из kwm-файла

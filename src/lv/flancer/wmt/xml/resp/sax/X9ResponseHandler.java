@@ -11,7 +11,6 @@ import lv.flancer.wmt.xml.resp.X9Response;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Интерфейс X9: Получение информации о балансе на кошельках.
@@ -20,17 +19,13 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version 1.0
  * 
  */
-public class X9ResponseHandler extends DefaultHandler {
+public class X9ResponseHandler extends AbstractResponseHandler {
 
 	/**
 	 * Флаг, показывающий, что происходит разбор элементов, относящихся к
 	 * "w3s.response/purses/purse".
 	 */
 	private boolean isPurseElementBeingParsed = false;
-	/**
-	 * Значение текущего разобранного элемента xml-документа.
-	 */
-	private String parsedValue;
 	/**
 	 * Отдельный кошелек.
 	 */
@@ -45,12 +40,6 @@ public class X9ResponseHandler extends DefaultHandler {
 	private X9Response response;
 
 	@Override
-	public void characters(char[] ch, int start, int length)
-			throws SAXException {
-		this.parsedValue = (new String(ch, start, length)).trim();
-	}
-
-	@Override
 	public void endElement(String uri, String localName, String qName)
 			throws SAXException {
 		if (this.isPurseElementBeingParsed) {
@@ -58,19 +47,8 @@ public class X9ResponseHandler extends DefaultHandler {
 			this.endElementPurse(qName);
 			return;
 		} else {
-			// разбор подмножества элемента "w3s.response"
-			if (qName.equals("retval")) {
-				this.response.setRetVal(this.parsedValue);
-				return;
-			}
-			if (qName.equals("retdesc")) {
-				this.response.setRetDesc(this.parsedValue);
-				return;
-			}
-			if (qName.equals("reqn")) {
-				this.response.setRequestNum(this.parsedValue);
-				return;
-			}
+			// разбор общих для большинства запросов элементов
+			super.endElement(uri, localName, qName);
 			// разбор подмножества элемента "w3s.response/purses"
 			if (qName.equals("purses")) {
 				this.response.setPurseList(this.pursesList);
@@ -132,6 +110,8 @@ public class X9ResponseHandler extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName,
 			Attributes attributes) throws SAXException {
+		// обработка общих элементов
+		super.startElement(uri, localName, qName, attributes);
 		// создаем новый экземпляр ответа
 		if (qName.equals("w3s.response")) {
 			this.response = new X9Response();

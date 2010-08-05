@@ -12,7 +12,6 @@ import lv.flancer.wmt.xml.resp.X3Response;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Интерфейс X3: Получение истории операций по кошельку. Проверка выполнения
@@ -22,16 +21,12 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version 1.0
  * 
  */
-public class X3ResponseHandler extends DefaultHandler {
+public class X3ResponseHandler extends AbstractResponseHandler {
 	/**
 	 * Флаг, показывающий, что происходит разбор элементов, относящихся к
 	 * "w3s.response/operations/operation".
 	 */
 	private boolean isOperationElementBeingParsed = false;
-	/**
-	 * Флаг, указывающий, что происходит разбор html-encoded элемента.
-	 */
-	private boolean isHtmlEncodedBeingParsed = false;
 	/**
 	 * Отдельная операция.
 	 */
@@ -41,24 +36,9 @@ public class X3ResponseHandler extends DefaultHandler {
 	 */
 	private List<Operation> operationList;
 	/**
-	 * Значение текущего разобранного элемента xml-документа.
-	 */
-	private String parsedValue;
-
-	/**
 	 * Разобранный ответ от XML сервиса.
 	 */
 	private X3Response response;
-
-	@Override
-	public void characters(char[] ch, int start, int length)
-			throws SAXException {
-		if (this.isHtmlEncodedBeingParsed) {
-			this.parsedValue += new String(ch, start, length);
-		} else {
-			this.parsedValue = (new String(ch, start, length)).trim();
-		}
-	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName)
@@ -68,19 +48,8 @@ public class X3ResponseHandler extends DefaultHandler {
 			this.endElementOperation(qName);
 			return;
 		} else {
-			// разбор подмножества элемента "w3s.response"
-			if (qName.equals("reqn")) {
-				this.response.setRequestNum(this.parsedValue);
-				return;
-			}
-			if (qName.equals("retval")) {
-				this.response.setRetVal(this.parsedValue);
-				return;
-			}
-			if (qName.equals("retdesc")) {
-				this.response.setRetDesc(this.parsedValue);
-				return;
-			}
+			// разбор общих элементов в "w3s.response"
+			super.endElement(uri, localName, qName);
 			// разбор подмножества элемента "w3s.response/operations"
 			if (qName.equals("operations")) {
 				this.response.setOperationList(this.operationList);
@@ -177,6 +146,8 @@ public class X3ResponseHandler extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName,
 			Attributes attributes) throws SAXException {
+		// обработка общих элементов
+		super.startElement(uri, localName, qName, attributes);
 		// создаем новый экземпляр ответа
 		if (qName.equals("w3s.response")) {
 			this.response = new X3Response();

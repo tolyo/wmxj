@@ -79,27 +79,20 @@ public class X7Request extends AbstractRequest {
 	public String getXmlRequest() {
 		String result = "<?xml version=\"1.0\"  encoding=\"windows-1251\"?>";
 		result += "<w3s.request>";
-		// signer wmid
 		if (this.signerWmid != null) {
 			result += "<wmid>" + this.signerWmid + "</wmid>";
 		} else {
 			result += "<wmid />";
 		}
-		// sign
 		if (this.sign != null) {
 			result += "<sign>" + this.sign + "</sign>";
 		} else {
 			result += "<sign />";
 		}
-		// testsign
 		result += "<testsign>";
-		// wmid
 		result += "<wmid>" + this.testSignWmid.toString() + "</wmid>";
-		// plan
 		result += "<plan>" + this.testSignPlan + "</plan>";
-		// sign
 		result += "<sign>" + this.testSignSign + "</sign>";
-
 		result += "</testsign>";
 		result += "</w3s.request>";
 		return result;

@@ -24,18 +24,17 @@ public class X3Request extends AbstractRequest {
 	 */
 	private WmDate dateStart;
 	/**
-	 * Номер счета в системе учета магазина (эквивалентно {@link #tranId}
-	 * ).Целое число > 0, максимально 2^31-1.
+	 * Номер счета в системе учета магазина.Целое число > 0, максимально 2^31-1.
 	 */
 	private long orderId;
 	/**
 	 * Номер кошелька для которого запрашивается операция.
 	 */
-	private PurseNumber purseNumber;
+	private PurseNumber purse;
 	/**
-	 * Номер перевода в системе отправителя (эквивалентно {@link #orderId}).
-	 * Любое целое число без знака (целое число > 0, максимально 2^31-1), должно
-	 * быть уникальным (два перевода с одним и тем же tranid невозможен).
+	 * Номер перевода в системе отправителя. Любое целое число без знака (целое
+	 * число > 0, максимально 2^31-1), должно быть уникальным (два перевода с
+	 * одним и тем же tranid невозможен).
 	 */
 	private long tranId;
 	/**
@@ -68,11 +67,9 @@ public class X3Request extends AbstractRequest {
 	}
 
 	/**
-	 * Номер счета в системе учета магазина (эквивалентно {@link #tranId}
-	 * ).Целое число > 0, максимально 2^31-1.
+	 * Номер счета в системе учета магазина.Целое число > 0, максимально 2^31-1.
 	 * 
-	 * @return Номер счета в системе учета магазина (эквивалентно
-	 *         {@link #tranId}
+	 * @return Номер счета в системе учета магазина
 	 */
 	public long getOrderId() {
 		return orderId;
@@ -83,21 +80,22 @@ public class X3Request extends AbstractRequest {
 	 * 
 	 * @return Номер кошелька для которого запрашивается операция.
 	 */
-	public PurseNumber getPurseNumber() {
-		return purseNumber;
+	public PurseNumber getPurse() {
+		return purse;
 	}
 
 	@Override
 	public String getTextToSign() {
-		String result = this.purseNumber.toString();
-		result += String.valueOf(requestNum);
+		String result = "";
+		result += this.purse;
+		result += this.requestNum;
 		return result;
 	}
 
 	/**
-	 * Номер перевода в системе отправителя (эквивалентно {@link #orderId}).
-	 * Любое целое число без знака (целое число > 0, максимально 2^31-1), должно
-	 * быть уникальным (два перевода с одним и тем же tranid невозможен).
+	 * Номер перевода в системе отправителя. Любое целое число без знака (целое
+	 * число > 0, максимально 2^31-1), должно быть уникальным (два перевода с
+	 * одним и тем же tranid невозможен).
 	 * 
 	 * @return Номер перевода в системе отправителя.
 	 */
@@ -128,35 +126,24 @@ public class X3Request extends AbstractRequest {
 	public String getXmlRequest() {
 		String result = "<?xml version=\"1.0\"  encoding=\"windows-1251\"?>";
 		result += "<w3s.request>";
-		// reqn
 		result += "<reqn>" + this.requestNum + "</reqn>";
-		// signer wmid
 		if (this.signerWmid != null) {
 			result += "<wmid>" + this.signerWmid + "</wmid>";
 		} else {
 			result += "<wmid />";
 		}
-		// sign
 		if (this.sign != null) {
 			result += "<sign>" + this.sign + "</sign>";
 		} else {
 			result += "<sign />";
 		}
-		// getoperations
 		result += "<getoperations>";
-		// purse
-		result += "<purse>" + this.purseNumber + "</purse>";
-		// wmtranid
+		result += "<purse>" + this.purse + "</purse>";
 		result += "<wmtranid>" + this.wmTranId + "</wmtranid>";
-		// tranid
 		result += "<tranid>" + this.tranId + "</tranid>";
-		// wminvid
 		result += "<wminvid>" + this.wmInvId + "</wminvid>";
-		// orderid
 		result += "<orderid>" + this.orderId + "</orderid>";
-		// datestart
 		result += "<datestart>" + this.dateStart.getWmtDate() + "</datestart>";
-		// datefinish
 		result += "<datefinish>" + this.dateFinish.getWmtDate()
 				+ "</datefinish>";
 		result += "</getoperations>";
@@ -187,12 +174,11 @@ public class X3Request extends AbstractRequest {
 	}
 
 	/**
-	 * Номер счета в системе учета магазина (эквивалентно {@link #tranId}
-	 * ).Целое число > 0, максимально 2^31-1.
+	 * Номер счета в системе учета магазина. Целое число > 0, максимально
+	 * 2^31-1.
 	 * 
 	 * @param orderId
-	 *            Номер счета в системе учета магазина (эквивалентно
-	 *            {@link #tranId}
+	 *            Номер счета в системе учета магазина
 	 */
 	public void setOrderId(long orderId) {
 		this.orderId = orderId;
@@ -204,14 +190,14 @@ public class X3Request extends AbstractRequest {
 	 * @param purseNumber
 	 *            Номер кошелька для которого запрашивается операция.
 	 */
-	public void setPurseNumber(PurseNumber purseNumber) {
-		this.purseNumber = purseNumber;
+	public void setPurse(PurseNumber purseNumber) {
+		this.purse = purseNumber;
 	}
 
 	/**
-	 * Номер перевода в системе отправителя (эквивалентно {@link #orderId}).
-	 * Любое целое число без знака (целое число > 0, максимально 2^31-1), должно
-	 * быть уникальным (два перевода с одним и тем же tranid невозможен).
+	 * Номер перевода в системе отправителя. Любое целое число без знака (целое
+	 * число > 0, максимально 2^31-1), должно быть уникальным (два перевода с
+	 * одним и тем же tranid невозможен).
 	 * 
 	 * @param tranId
 	 *            Номер перевода в системе отправителя.

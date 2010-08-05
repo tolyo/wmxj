@@ -123,8 +123,8 @@ public class X2Request extends AbstractRequest {
 		String result = "";
 		result += this.requestNum;
 		result += this.tranId;
-		result += this.purseSrc.getValue();
-		result += this.purseDest.getValue();
+		result += this.purseSrc;
+		result += this.purseDest;
 		result += this.amount.getWmFormated();
 		result += this.period;
 		result += this.pCode;
@@ -160,21 +160,17 @@ public class X2Request extends AbstractRequest {
 	public String getXmlRequest() {
 		String result = "<?xml version=\"1.0\"  encoding=\"windows-1251\"?>";
 		result += "<w3s.request>";
-		// reqn
 		result += "<reqn>" + this.requestNum + "</reqn>";
-		// signer wmid
 		if (this.signerWmid != null) {
 			result += "<wmid>" + this.signerWmid + "</wmid>";
 		} else {
 			result += "<wmid />";
 		}
-		// sign
 		if (this.sign != null) {
 			result += "<sign>" + this.sign + "</sign>";
 		} else {
 			result += "<sign />";
 		}
-		// trans
 		result += "<trans>";
 		result += "<tranid>" + this.getTranId() + "</tranid>";
 		result += "<pursesrc>" + this.getPurseSrc() + "</pursesrc>";
@@ -184,7 +180,6 @@ public class X2Request extends AbstractRequest {
 		result += "<pcode>" + this.getPcode() + "</pcode>";
 		result += "<desc>" + this.getDesc() + "</desc>";
 		result += "<wminvid>" + this.getWmInvId() + "</wminvid>";
-		// close tags
 		result += "</trans>";
 		result += "</w3s.request>";
 		return result;

@@ -7,7 +7,6 @@ import lv.flancer.wmt.xml.resp.X8Response;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Интерфейс X8: Получение информации о принадлежности кошелька. Поиск участника
@@ -17,39 +16,18 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version 1.0
  * 
  */
-public class X8ResponseHandler extends DefaultHandler {
+public class X8ResponseHandler extends AbstractResponseHandler {
 
-	/**
-	 * Значение текущего разобранного элемента xml-документа.
-	 */
-	private String parsedValue;
 	/**
 	 * Разобранный ответ от XML сервиса.
 	 */
 	private X8Response response;
 
 	@Override
-	public void characters(char[] ch, int start, int length)
-			throws SAXException {
-		this.parsedValue = (new String(ch, start, length)).trim();
-	}
-
-	@Override
 	public void endElement(String uri, String localName, String qName)
 			throws SAXException {
-		// разбор подмножества элемента "w3s.response"
-		if (qName.equals("retval")) {
-			this.response.setRetVal(this.parsedValue);
-			return;
-		}
-		if (qName.equals("retdesc")) {
-			this.response.setRetDesc(this.parsedValue);
-			return;
-		}
-		if (qName.equals("reqn")) {
-			this.response.setRequestNum(this.parsedValue);
-			return;
-		}
+		// разбор общих для большинства запросов элементов
+		super.endElement(uri, localName, qName);
 		// разбор подмножества элемента "w3s.response/testwmpurse"
 		if (qName.equals("wmid")) {
 			this.response.setWmid(this.parsedValue);
@@ -73,6 +51,8 @@ public class X8ResponseHandler extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName,
 			Attributes attributes) throws SAXException {
+		// обработка общих элементов
+		super.startElement(uri, localName, qName, attributes);
 		// создаем новый экземпляр ответа
 		if (qName.equals("w3s.response")) {
 			this.response = new X8Response();
