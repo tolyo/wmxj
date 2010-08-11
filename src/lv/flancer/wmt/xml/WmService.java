@@ -108,6 +108,17 @@ public class WmService {
 	 */
 	private String httpResponse;
 	/**
+	 * Количество попыток повторения запросов к XML-сервисам, в случае
+	 * возникновения проблем в сети (IOException). По умолчанию - 1.
+	 */
+	private int httpRetries = 1;
+	/**
+	 * Время (мсек.) между попытками соединения с сервером WM XML, если по
+	 * каким-то причинам соединение не установилось с первого раза. По умолчанию
+	 * - 5000 мсек.;
+	 */
+	private int httpRetriesSleepTime = 5000;
+	/**
 	 * Парсер для разбора XML-ответа от WMT XML.
 	 */
 	private SAXParser saxParser;
@@ -115,6 +126,11 @@ public class WmService {
 	 * WmSigner для генерации подписи при авторизации по схеме Classic.
 	 */
 	private WmSigner signer;
+	/**
+	 * Содержит XML-запрос, отправленный на сервис WMT XML.
+	 */
+	private String xmlRequest;
+
 	/**
 	 * Содержит XML-ответ, полученный от сервиса WMT XML.
 	 */
@@ -143,6 +159,38 @@ public class WmService {
 	 */
 	public String getHttpResponse() {
 		return httpResponse;
+	}
+
+	/**
+	 * Количество попыток повторения запросов к XML-сервисам, в случае
+	 * возникновения проблем в сети (IOException). По умолчанию - 1.
+	 * 
+	 * @return Количество попыток повторения запросов к XML-сервисам, в случае
+	 *         возникновения проблем в сети (IOException).
+	 */
+	public int getHttpRetries() {
+		return httpRetries;
+	}
+
+	/**
+	 * Время (мсек.) между попытками соединения с сервером WM XML, если по
+	 * каким-то причинам соединение не установилось с первого раза. По умолчанию
+	 * - 5000 мсек.;
+	 * 
+	 * @return Время (мсек.) между попытками соединения с сервером WM XML, если
+	 *         по каким-то причинам соединение не установилось с первого раза.
+	 */
+	public int getHttpRetriesSleepTime() {
+		return httpRetriesSleepTime;
+	}
+
+	/**
+	 * Содержит XML-запрос, отправленный на сервис WMT XML.
+	 * 
+	 * @return Содержит XML-запрос, отправленный на сервис WMT XML.
+	 */
+	public String getXmlRequest() {
+		return xmlRequest;
 	}
 
 	/**
@@ -254,16 +302,71 @@ public class WmService {
 		this.httpResponse = null;
 		this.httpRequest = null;
 		this.xmlResponse = null;
+		this.xmlRequest = requestBody;
 		HttpRequester httpReq = new HttpRequester(host, 443);
 		httpReq.setRequestCharset(HTTP_CAHRSET);
 		httpReq.setResponseCharset(HTTP_CAHRSET);
 		httpReq.setSecuredResuest(true);
-		this.httpResponse = httpReq.doPost(requestAddress, requestBody);
+		// цикл повторений запросов, на случай сбоев в сети
+		int i = 0;
+		do {
+			i++;
+			try {
+				this.httpResponse = httpReq.doPost(requestAddress, requestBody);
+			} catch (IOException e) {
+				e.printStackTrace();
+				// сбрасываем соединение и "засыпаем" на некоторое время.
+				System.out.println("Connection retry #" + i
+						+ " is failed. Sleeping " + this.httpRetriesSleepTime
+						+ " msec.");
+				try {
+					Thread.sleep(this.httpRetriesSleepTime);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+			}
+		} while ((this.httpResponse == null) && (i < httpRetries));
 		this.httpRequest = httpReq.getRequest();
 		// вырезаем текст xml из http-ответа.
 		int start = this.httpResponse.indexOf("<?xml version=\"1.0\"");
 		this.xmlResponse = this.httpResponse.substring(start);
 		return this.httpResponse;
+	}
+
+	/**
+	 * Количество попыток повторения запросов к XML-сервисам, в случае
+	 * возникновения проблем в сети (IOException). По умолчанию - 1.
+	 * 
+	 * @param httpRetries
+	 *            Количество попыток повторения запросов к XML-сервисам, в
+	 *            случае возникновения проблем в сети (IOException).
+	 */
+	public void setHttpRetries(int httpRetries) {
+		this.httpRetries = httpRetries;
+	}
+
+	/**
+	 * Время (мсек.) между попытками соединения с сервером WM XML, если по
+	 * каким-то причинам соединение не установилось с первого раза. По умолчанию
+	 * - 5000 мсек.;
+	 * 
+	 * @param httpRetriesSleepTime
+	 *            Время (мсек.) между попытками соединения с сервером WM XML,
+	 *            если по каким-то причинам соединение не установилось с первого
+	 *            раза.
+	 */
+	public void setHttpRetriesSleepTime(int httpRetriesSleepTime) {
+		this.httpRetriesSleepTime = httpRetriesSleepTime;
+	}
+
+	/**
+	 * Содержит XML-запрос, отправленный на сервис WMT XML.
+	 * 
+	 * @param xmlRequest
+	 *            Содержит XML-запрос, отправленный на сервис WMT XML.
+	 */
+	public void setXmlRequest(String xmlRequest) {
+		this.xmlRequest = xmlRequest;
 	}
 
 	/**

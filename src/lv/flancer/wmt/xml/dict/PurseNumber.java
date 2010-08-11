@@ -3,6 +3,7 @@
  */
 package lv.flancer.wmt.xml.dict;
 
+
 /**
  * Номер WebMoney-кошелька.
  * 
@@ -24,6 +25,16 @@ public class PurseNumber {
 		this.value = value.toUpperCase();
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof PurseNumber)) {
+			return false;
+		}
+		PurseNumber other = (PurseNumber) obj;
+		return (value.equals(other.getValue()));
+
+	}
+
 	/**
 	 * Номер кошелька, включая префикс: Z123456789012.
 	 * 
@@ -31,6 +42,11 @@ public class PurseNumber {
 	 */
 	public String getValue() {
 		return value;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.toString().hashCode();
 	}
 
 	/**

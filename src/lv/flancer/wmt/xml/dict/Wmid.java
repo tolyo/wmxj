@@ -20,6 +20,16 @@ public class Wmid {
 		this.value = value;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Wmid)) {
+			return false;
+		}
+		Wmid other = (Wmid) obj;
+		return (value.equals(other.getValue()));
+
+	}
+
 	/**
 	 * Значение WM-идентификатора.
 	 * 
@@ -27,6 +37,11 @@ public class Wmid {
 	 */
 	public String getValue() {
 		return value;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.toString().hashCode();
 	}
 
 	/**
