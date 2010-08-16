@@ -57,6 +57,8 @@ public abstract class AbstractResponseHandler extends DefaultHandler {
 			result = new String(encoded.getBytes(HTTP_CAHRSET));
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
+		} catch (NullPointerException e) {
+			// do nothing
 		}
 		return result;
 	}

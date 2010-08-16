@@ -38,7 +38,7 @@ public class X10ResponseHandler extends AbstractResponseHandler {
 	/**
 	 * Разобранный ответ от XML сервиса.
 	 */
-	X10Response response;
+	private X10Response response;
 
 	@Override
 	public void endElement(String uri, String localName, String qName)

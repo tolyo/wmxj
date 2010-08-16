@@ -15,6 +15,7 @@ import lv.flancer.wmt.xml.dict.Wmid;
 import lv.flancer.wmt.xml.dict.X18AuthType;
 import lv.flancer.wmt.xml.req.RequestNumberGenerator;
 import lv.flancer.wmt.xml.req.X10Request;
+import lv.flancer.wmt.xml.req.X11Request;
 import lv.flancer.wmt.xml.req.X18Request;
 import lv.flancer.wmt.xml.req.X1Request;
 import lv.flancer.wmt.xml.req.X2Request;
@@ -27,6 +28,7 @@ import lv.flancer.wmt.xml.req.X8Request;
 import lv.flancer.wmt.xml.req.X9Request;
 import lv.flancer.wmt.xml.req.XmlRequest;
 import lv.flancer.wmt.xml.resp.X10Response;
+import lv.flancer.wmt.xml.resp.X11Response;
 import lv.flancer.wmt.xml.resp.X18Response;
 import lv.flancer.wmt.xml.resp.X1Response;
 import lv.flancer.wmt.xml.resp.X2Response;
@@ -38,6 +40,7 @@ import lv.flancer.wmt.xml.resp.X7Response;
 import lv.flancer.wmt.xml.resp.X8Response;
 import lv.flancer.wmt.xml.resp.X9Response;
 import lv.flancer.wmt.xml.resp.sax.X10ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X11ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X18ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X1ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X2ResponseHandler;
@@ -99,6 +102,7 @@ public class WmService {
 	private final static String WMT_HOST_CLASSIC = "w3s.webmoney.ru";
 	private final static String WMT_HOST_LIGHT = "w3s.wmtransfer.com";
 	private final static String WMT_HOST_MERCHANT = "merchant.webmoney.ru";
+	private final static String WMT_HOST_PASSPORT = "passport.webmoney.ru";
 	/**
 	 * Содержит текстовый вариант HTTP-запроса, отправленного на сервис WMT XML.
 	 */
@@ -328,7 +332,7 @@ public class WmService {
 		} while ((this.httpResponse == null) && (i < httpRetries));
 		this.httpRequest = httpReq.getRequest();
 		// вырезаем текст xml из http-ответа.
-		int start = this.httpResponse.indexOf("<?xml version=\"1.0\"");
+		int start = this.httpResponse.indexOf("<?xml version=");
 		this.xmlResponse = this.httpResponse.substring(start);
 		return this.httpResponse;
 	}
@@ -512,6 +516,65 @@ public class WmService {
 		sendHttpRequest(host, requestAddress, req.getXmlRequest());
 		// производим разбор запроса
 		X10ResponseHandler hdl = new X10ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для X11: Получение сведений об аттестате WM идентификатора
+	 * и персональных данных его владельца.
+	 * </p>
+	 * 
+	 * @param passportWmid
+	 *            WMID аттестата.
+	 * @param dict
+	 *            Отображение "опорного словаря" (1 - да, 0 - нет).
+	 * @param info
+	 *            Отображение персональных данных владельца аттестата (1 - да, 0
+	 *            - нет).
+	 * @param mode
+	 *            Проверка принадлежности WM идентификатора, подписавшего
+	 *            запрос, списку доверенных идентификаторов для проверяемого
+	 *            аттестата (1 - да, 0 - нет).
+	 * @return X11Response
+	 * @throws Exception
+	 */
+	public X11Response x11(String passportWmid, int dict, int info, int mode)
+			throws Exception {
+		X11Request req = new X11Request();
+		req.setPassportWmid(passportWmid);
+		req.setDict(dict);
+		req.setInfo(info);
+		req.setMode(mode);
+		return this.x11(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X11: Получение сведений об аттестате WM
+	 * идентификатора и персональных данных его владельца.
+	 * </p>
+	 * 
+	 * @param req
+	 *            X11Request
+	 * @return X11Response
+	 * @throws Exception
+	 */
+	public X11Response x11(X11Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_PASSPORT;
+		String requestAddress = "/asp/XMLGetWMPassport.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X11Request) this.initSignature(req);
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X11ResponseHandler hdl = new X11ResponseHandler();
 		ByteArrayInputStream is = new ByteArrayInputStream(
 				this.xmlResponse.getBytes());
 		this.saxParser.parse(is, hdl);
