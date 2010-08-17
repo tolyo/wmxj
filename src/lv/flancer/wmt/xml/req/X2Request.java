@@ -200,11 +200,11 @@ public class X2Request extends AbstractRequest {
 	/**
 	 * Сумма платежа.
 	 * 
-	 * @param amount2
+	 * @param amount
 	 *            Сумма платежа.
 	 */
-	public void setAmount(double amount2) {
-		this.amount = new WmAmount(amount2);
+	public void setAmount(double amount) {
+		this.amount = new WmAmount(amount);
 	}
 
 	/**

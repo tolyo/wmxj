@@ -13,10 +13,16 @@ import lv.flancer.wmt.xml.dict.PurseNumber;
 import lv.flancer.wmt.xml.dict.WmDate;
 import lv.flancer.wmt.xml.dict.Wmid;
 import lv.flancer.wmt.xml.dict.X18AuthType;
+import lv.flancer.wmt.xml.dict.X19Operation;
+import lv.flancer.wmt.xml.dict.X19UserInfo;
 import lv.flancer.wmt.xml.req.RequestNumberGenerator;
 import lv.flancer.wmt.xml.req.X10Request;
 import lv.flancer.wmt.xml.req.X11Request;
+import lv.flancer.wmt.xml.req.X13Request;
+import lv.flancer.wmt.xml.req.X14Request;
+import lv.flancer.wmt.xml.req.X16Request;
 import lv.flancer.wmt.xml.req.X18Request;
+import lv.flancer.wmt.xml.req.X19Request;
 import lv.flancer.wmt.xml.req.X1Request;
 import lv.flancer.wmt.xml.req.X2Request;
 import lv.flancer.wmt.xml.req.X3Request;
@@ -29,7 +35,11 @@ import lv.flancer.wmt.xml.req.X9Request;
 import lv.flancer.wmt.xml.req.XmlRequest;
 import lv.flancer.wmt.xml.resp.X10Response;
 import lv.flancer.wmt.xml.resp.X11Response;
+import lv.flancer.wmt.xml.resp.X13Response;
+import lv.flancer.wmt.xml.resp.X14Response;
+import lv.flancer.wmt.xml.resp.X16Response;
 import lv.flancer.wmt.xml.resp.X18Response;
+import lv.flancer.wmt.xml.resp.X19Response;
 import lv.flancer.wmt.xml.resp.X1Response;
 import lv.flancer.wmt.xml.resp.X2Response;
 import lv.flancer.wmt.xml.resp.X3Response;
@@ -41,7 +51,11 @@ import lv.flancer.wmt.xml.resp.X8Response;
 import lv.flancer.wmt.xml.resp.X9Response;
 import lv.flancer.wmt.xml.resp.sax.X10ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X11ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X13ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X14ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X16ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X18ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X19ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X1ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X2ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X3ResponseHandler;
@@ -448,7 +462,7 @@ public class WmService {
 
 	/**
 	 * <p>
-	 * Минимальная форма для для X10: Получение списка счетов на оплату.
+	 * Минимальная форма для X10: Получение списка счетов на оплату.
 	 * </p>
 	 * 
 	 * @param wmid
@@ -467,7 +481,7 @@ public class WmService {
 
 	/**
 	 * <p>
-	 * Простая форма для для X10: Получение списка счетов на оплату.
+	 * Простая форма для X10: Получение списка счетов на оплату.
 	 * </p>
 	 * 
 	 * @param wmid
@@ -583,7 +597,164 @@ public class WmService {
 
 	/**
 	 * <p>
-	 * Простая форма для для X18: Получение деталей операции через WM Merchant.
+	 * Простая форма для X13: Возврат незавершенного платежа с протекцией.
+	 * </p>
+	 * 
+	 * @param wmtranid
+	 *            Номер транзакции (целое положительное число) по внутреннему
+	 *            учету WebMoney Transfer (wmtranid), при этом тип этой
+	 *            транзакции должен быть с протекцией (по коду или по времени),
+	 *            а состояние транзакции с протекцией – не завершена.
+	 * @return X13Response
+	 * @throws Exception
+	 */
+	public X13Response x13(long wmtranid) throws Exception {
+		X13Request req = new X13Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setWmTranId(wmtranid);
+		return this.x13(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X13: Возврат незавершенного платежа с протекцией.
+	 * </p>
+	 * 
+	 * @param req
+	 *            X13Request
+	 * @return X13Response
+	 * @throws Exception
+	 */
+	public X13Response x13(X13Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_LIGHT;
+		String requestAddress = "/asp/XMLRejectProtectCert.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X13Request) this.initSignature(req);
+			host = WMT_HOST_CLASSIC;
+			requestAddress = "/asp/XMLRejectProtect.asp";
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X13ResponseHandler hdl = new X13ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для X14: Бескомиссионный возврат средств отправителю
+	 * (покупателю).
+	 * </p>
+	 * 
+	 * @param inWmTranId
+	 *            номер транзакции.
+	 * @param amount
+	 *            сумма транзакции
+	 * @return X14Response
+	 * @throws Exception
+	 */
+	public X14Response x14(long inWmTranId, double amount) throws Exception {
+		X14Request req = new X14Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setInWmTranId(inWmTranId);
+		req.setAmount(amount);
+		return this.x14(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X14: Бескомиссионный возврат средств отправителю
+	 * (покупателю).
+	 * </p>
+	 * 
+	 * @return X14Response
+	 * @throws Exception
+	 */
+	public X14Response x14(X14Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_LIGHT;
+		String requestAddress = "/asp/XMLTransMoneybackCert.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X14Request) this.initSignature(req);
+			host = WMT_HOST_CLASSIC;
+			requestAddress = "/asp/XMLTransMoneyback.asp";
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X14ResponseHandler hdl = new X14ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для X16: Создание кошелька.
+	 * </p>
+	 * 
+	 * @param wmid
+	 *            ВМ-идентификатор, которому будет принадлежать вновь созданный
+	 *            кошелек.
+	 * @param purseType
+	 *            Тип создаваемого кошелька в виде одного латинского символа в
+	 *            верхнем регистре B ,C ,D ,E ,G ,R ,U ,Y ,Z.
+	 * @param desc
+	 *            Текстовое название кошелька, которое будет отображаться в
+	 *            интерфейсе Webmoney Keeper Classic или Light.
+	 * @return
+	 * @throws Exception
+	 */
+	public X16Response x16(String wmid, char purseType, String desc)
+			throws Exception {
+		X16Request req = new X16Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setWmid(wmid);
+		req.setPurseType(purseType);
+		req.setDesc(desc);
+		return this.x16(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X16: Создание кошелька.
+	 * </p>
+	 * 
+	 * @param req
+	 *            X16Request
+	 * @return X16Response
+	 * @throws Exception
+	 */
+	public X16Response x16(X16Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_LIGHT;
+		String requestAddress = "/asp/XMLCreatePurseCert.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X16Request) this.initSignature(req);
+			host = WMT_HOST_CLASSIC;
+			requestAddress = "/asp/XMLCreatePurse.asp";
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X16ResponseHandler hdl = new X16ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для X18: Получение деталей операции через WM Merchant.
 	 * </p>
 	 * 
 	 * @param wmid
@@ -635,6 +806,52 @@ public class WmService {
 		sendHttpRequest(host, requestAddress, req.getXmlRequest());
 		// производим разбор запроса
 		X18ResponseHandler hdl = new X18ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для X19: Проверка соответствия персональных данных
+	 * владельца WM-идентификатора.
+	 * </p>
+	 * 
+	 */
+	public X19Response x19(X19Operation operation, X19UserInfo userInfo,
+			String lang) throws Exception {
+		X19Request req = new X19Request();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setOperation(operation);
+		req.setUserInfo(userInfo);
+		return this.x19(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X19: Проверка соответствия персональных данных
+	 * владельца WM-идентификатора.
+	 * </p>
+	 * 
+	 * @param req
+	 *            X19Request
+	 * @return X19Response
+	 * @throws Exception
+	 */
+	public X19Response x19(X19Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_PASSPORT;
+		String requestAddress = "/XML/XMLCheckUserCert.aspx";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X19Request) this.initSignature(req);
+			requestAddress = "/XML/XMLCheckUser.aspx";
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X19ResponseHandler hdl = new X19ResponseHandler();
 		ByteArrayInputStream is = new ByteArrayInputStream(
 				this.xmlResponse.getBytes());
 		this.saxParser.parse(is, hdl);
@@ -1151,7 +1368,7 @@ public class WmService {
 
 	/**
 	 * <p>
-	 * Простая форма для для X9: Получение информации о балансе на кошельках.
+	 * Простая форма для X9: Получение информации о балансе на кошельках.
 	 * </p>
 	 * 
 	 * @param wmid

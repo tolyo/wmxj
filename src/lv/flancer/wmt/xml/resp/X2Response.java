@@ -40,7 +40,7 @@ public class X2Response extends AbstractResponse {
 	/**
 	 * Уникальный номер платежа в системе учета WebMoney.
 	 */
-	private int id;
+	private long id;
 	/**
 	 * Тип перевода (платежа).
 	 */
@@ -66,15 +66,15 @@ public class X2Response extends AbstractResponse {
 	/**
 	 * Номер перевода в системе учета отправителя.
 	 */
-	private int tranId;
+	private long tranId;
 	/**
 	 * Служебный номер платежа в системе учета WebMoney.
 	 */
-	private int ts;
+	private long ts;
 	/**
 	 * Номер счета в системе WebMoney, по которому выполняется перевод.
 	 */
-	private int wmInvId;
+	private long wmInvId;
 
 	/**
 	 * Сумма платежа.
@@ -126,7 +126,7 @@ public class X2Response extends AbstractResponse {
 	 * 
 	 * @return Уникальный номер платежа в системе учета WebMoney.
 	 */
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
@@ -183,7 +183,7 @@ public class X2Response extends AbstractResponse {
 	 * 
 	 * @return Номер перевода в системе учета отправителя.
 	 */
-	public int getTranId() {
+	public long getTranId() {
 		return tranId;
 	}
 
@@ -192,7 +192,7 @@ public class X2Response extends AbstractResponse {
 	 * 
 	 * @return Служебный номер платежа в системе учета WebMoney.
 	 */
-	public int getTs() {
+	public long getTs() {
 		return ts;
 	}
 
@@ -201,7 +201,7 @@ public class X2Response extends AbstractResponse {
 	 * 
 	 * @return Номер счета в системе WebMoney, по которому выполняется перевод.
 	 */
-	public int getWmInvId() {
+	public long getWmInvId() {
 		return wmInvId;
 	}
 
@@ -301,7 +301,7 @@ public class X2Response extends AbstractResponse {
 	 * @param id
 	 *            Уникальный номер платежа в системе учета WebMoney.
 	 */
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 
@@ -312,7 +312,7 @@ public class X2Response extends AbstractResponse {
 	 *            Уникальный номер платежа в системе учета WebMoney.
 	 */
 	public void setId(String id) {
-		this.id = Integer.parseInt(id);
+		this.id = Long.parseLong(id);
 	}
 
 	/**
@@ -417,7 +417,7 @@ public class X2Response extends AbstractResponse {
 	 * @param tranId
 	 *            Номер перевода в системе учета отправителя.
 	 */
-	public void setTranId(int tranId) {
+	public void setTranId(long tranId) {
 		this.tranId = tranId;
 	}
 
@@ -428,7 +428,7 @@ public class X2Response extends AbstractResponse {
 	 *            Номер перевода в системе учета отправителя.
 	 */
 	public void setTranId(String tranId) {
-		this.tranId = Integer.parseInt(tranId);
+		this.tranId = Long.parseLong(tranId);
 	}
 
 	/**
@@ -437,7 +437,7 @@ public class X2Response extends AbstractResponse {
 	 * @param ts
 	 *            Служебный номер платежа в системе учета WebMoney.
 	 */
-	public void setTs(int ts) {
+	public void setTs(long ts) {
 		this.ts = ts;
 	}
 
@@ -448,7 +448,7 @@ public class X2Response extends AbstractResponse {
 	 *            Служебный номер платежа в системе учета WebMoney.
 	 */
 	public void setTs(String ts) {
-		this.ts = Integer.parseInt(ts);
+		this.ts = Long.parseLong(ts);
 	}
 
 	/**
@@ -458,7 +458,7 @@ public class X2Response extends AbstractResponse {
 	 *            Номер счета в системе WebMoney, по которому выполняется
 	 *            перевод.
 	 */
-	public void setWmInvId(int wmInvId) {
+	public void setWmInvId(long wmInvId) {
 		this.wmInvId = wmInvId;
 	}
 
@@ -470,7 +470,7 @@ public class X2Response extends AbstractResponse {
 	 *            перевод.
 	 */
 	public void setWmInvId(String wmInvId) {
-		this.wmInvId = Integer.parseInt(wmInvId);
+		this.wmInvId = Long.parseLong(wmInvId);
 	}
 
 }
