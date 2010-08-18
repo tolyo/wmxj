@@ -16,7 +16,7 @@ public enum X19OperationDirection {
 	 * Возвращает значение типа по его коду.
 	 * 
 	 * @param code
-	 * @return
+	 * @return значение типа
 	 */
 	public static X19OperationDirection getByValue(int code) {
 		switch (code) {

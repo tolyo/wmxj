@@ -3,8 +3,12 @@ package lv.flancer.wmt.xml;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -20,7 +24,10 @@ import lv.flancer.wmt.xml.req.X10Request;
 import lv.flancer.wmt.xml.req.X11Request;
 import lv.flancer.wmt.xml.req.X13Request;
 import lv.flancer.wmt.xml.req.X14Request;
+import lv.flancer.wmt.xml.req.X15RequestList;
+import lv.flancer.wmt.xml.req.X15RequestSave;
 import lv.flancer.wmt.xml.req.X16Request;
+import lv.flancer.wmt.xml.req.X17Request;
 import lv.flancer.wmt.xml.req.X18Request;
 import lv.flancer.wmt.xml.req.X19Request;
 import lv.flancer.wmt.xml.req.X1Request;
@@ -37,7 +44,10 @@ import lv.flancer.wmt.xml.resp.X10Response;
 import lv.flancer.wmt.xml.resp.X11Response;
 import lv.flancer.wmt.xml.resp.X13Response;
 import lv.flancer.wmt.xml.resp.X14Response;
+import lv.flancer.wmt.xml.resp.X15ResponseList;
+import lv.flancer.wmt.xml.resp.X15ResponseSave;
 import lv.flancer.wmt.xml.resp.X16Response;
+import lv.flancer.wmt.xml.resp.X17Response;
 import lv.flancer.wmt.xml.resp.X18Response;
 import lv.flancer.wmt.xml.resp.X19Response;
 import lv.flancer.wmt.xml.resp.X1Response;
@@ -53,7 +63,10 @@ import lv.flancer.wmt.xml.resp.sax.X10ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X11ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X13ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X14ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X15ResponseListHandler;
+import lv.flancer.wmt.xml.resp.sax.X15ResponseSaveHandler;
 import lv.flancer.wmt.xml.resp.sax.X16ResponseHandler;
+import lv.flancer.wmt.xml.resp.sax.X17ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X18ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X19ResponseHandler;
 import lv.flancer.wmt.xml.resp.sax.X1ResponseHandler;
@@ -90,15 +103,27 @@ import lv.flancer.wmt.xml.wmsigner.WmSigner;
  * установки только в "библиотечном" типе вызова.
  * </p>
  * <p>
- * Пример вызова (авторизация по схеме Classic):
+ * Пример вызова, авторизация по схеме Classiс:
  * </p>
  * 
  * <pre>
  * try {
  *   WmService service = new WmService();
  *   service.initWmSignerKwm(&quot;123456789012&quot;, &quot;/path/to/kwm/file&quot;, &quot;KeyPassword&quot;);
- *   X6Response resp = service.x6(&quot;123456789012&quot;, &quot;Message Subject&quot;,
- * 		&quot;Message Body...&quot;);
+ *   X6Response resp = service.x6(&quot;123456789012&quot;, &quot;Message Subject&quot;, &quot;Message Body...&quot;);
+ * catch(Exception e) {
+ * }
+ * </pre>
+ * <p>
+ * Пример вызова, авторизация по схеме Light:
+ * </p>
+ * 
+ * <pre>
+ * try {
+ *   WmService service = new WmService();
+ *   service.initWmLightKeyStore("/path/to/javaKeyStore/468526977914.jks", "jksPassword");
+ *   service.setAllowUnsafeRenegotiation(true);
+ *   X6Response resp = service.x6(&quot;123456789012&quot;, &quot;Message Subject&quot;, &quot;Message Body...&quot;);
  * catch(Exception e) {
  * }
  * </pre>
@@ -113,6 +138,7 @@ public class WmService {
 	 */
 	private final static String HTTP_CAHRSET = "windows-1251";
 
+	private final static String WMT_HOST_ARBITRAGE = "arbitrage.webmoney.ru";
 	private final static String WMT_HOST_CLASSIC = "w3s.webmoney.ru";
 	private final static String WMT_HOST_LIGHT = "w3s.wmtransfer.com";
 	private final static String WMT_HOST_MERCHANT = "merchant.webmoney.ru";
@@ -136,6 +162,16 @@ public class WmService {
 	 * - 5000 мсек.;
 	 */
 	private int httpRetriesSleepTime = 5000;
+	/**
+	 * Пароль доступа к хранилищу ключей, содержащему персональный сертификат
+	 * для аутентификации по схеме Light.
+	 */
+	private String lightKeyStorePassword;
+	/**
+	 * Путь к хранилищу ключей, содержащему персональный сертификат для
+	 * аутентификации по схеме Light.
+	 */
+	private String lightKeyStorePath;
 	/**
 	 * Парсер для разбора XML-ответа от WMT XML.
 	 */
@@ -238,6 +274,22 @@ public class WmService {
 	}
 
 	/**
+	 * Инициирует сервис для использования аутентификации по схеме WebMoney
+	 * Light (с персональным сертификатом).
+	 * 
+	 * @param keyStorePath
+	 *            путь к хранилищу, содержащему ключ для аутентификации по схеме
+	 *            Light.
+	 * @param keyStorePassword
+	 *            пароль доступа к хранилищу, содержащему ключ для
+	 *            аутентификации по схеме Light.
+	 */
+	public void initWmLightKeyStore(String keyStorePath, String keyStorePassword) {
+		this.lightKeyStorePath = keyStorePath;
+		this.lightKeyStorePassword = keyStorePassword;
+	}
+
+	/**
 	 * Инициирует WmSigner с использованием ключа из Base64-кодированной строки.
 	 * 
 	 * @param wmid
@@ -301,6 +353,21 @@ public class WmService {
 	}
 
 	/**
+	 * Данная настройка нужна для аутентификации по схеме Light. Более подробно
+	 * - http://blogs.sun.com/security/entry/
+	 * vulnerability_in_tls_protocol_during и
+	 * http://java.sun.com/javase/javaseforbusiness/docs/TLSReadme.html
+	 * 
+	 * @param allow
+	 *            'true' - разрешить Unsafe Renegotiation, 'false' - наоборот.
+	 */
+	public void setAllowUnsafeRenegotiation(boolean allow) {
+		java.lang.System.setProperty(
+				"sun.security.ssl.allowUnsafeRenegotiation",
+				String.valueOf(allow));
+	}
+
+	/**
 	 * Выполняет непосредственную отправку HTTP-запроса на сервис WMT XML.
 	 * 
 	 * @param host
@@ -313,15 +380,25 @@ public class WmService {
 	 * @throws KeyManagementException
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
+	 * @throws CertificateException
+	 * @throws KeyStoreException
+	 * @throws UnrecoverableKeyException
 	 */
 	private String sendHttpRequest(String host, String requestAddress,
 			String requestBody) throws KeyManagementException,
-			NoSuchAlgorithmException, IOException {
+			NoSuchAlgorithmException, IOException, UnrecoverableKeyException,
+			KeyStoreException, CertificateException {
 		this.httpResponse = null;
 		this.httpRequest = null;
 		this.xmlResponse = null;
 		this.xmlRequest = requestBody;
 		HttpRequester httpReq = new HttpRequester(host, 443);
+		// инициируем JKS, если для аутентификации используется схема Light
+		if ((this.lightKeyStorePath != null)
+				&& (this.lightKeyStorePassword != null)) {
+			httpReq.loadKeyStore(this.lightKeyStorePath,
+					this.lightKeyStorePassword, false);
+		}
 		httpReq.setRequestCharset(HTTP_CAHRSET);
 		httpReq.setResponseCharset(HTTP_CAHRSET);
 		httpReq.setSecuredResuest(true);
@@ -334,17 +411,21 @@ public class WmService {
 			} catch (IOException e) {
 				e.printStackTrace();
 				// сбрасываем соединение и "засыпаем" на некоторое время.
-				System.out.println("Connection retry #" + i
-						+ " is failed. Sleeping " + this.httpRetriesSleepTime
-						+ " msec.");
-				try {
-					Thread.sleep(this.httpRetriesSleepTime);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
+				System.out.println("Connection retry #" + i + " is failed.");
+				if (i < httpRetries) {
+					try {
+						System.out.println("Sleeping "
+								+ this.httpRetriesSleepTime + " msec.");
+						Thread.sleep(this.httpRetriesSleepTime);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
 				}
 			}
 		} while ((this.httpResponse == null) && (i < httpRetries));
 		this.httpRequest = httpReq.getRequest();
+		// System.out.println(this.httpRequest);
+		// System.out.println(this.httpResponse);
 		// вырезаем текст xml из http-ответа.
 		int start = this.httpResponse.indexOf("<?xml version=");
 		this.xmlResponse = this.httpResponse.substring(start);
@@ -697,6 +778,101 @@ public class WmService {
 
 	/**
 	 * <p>
+	 * Простая форма для X15: <b>Просмотр</b> и изменение текущих настроек
+	 * управления "по доверию".
+	 * </p>
+	 * 
+	 * @param wmid
+	 *            проверяемый WMID.
+	 * @param iTrust
+	 *            'true' - запрос "кому я доверяю", 'false' - запрос
+	 *            "кто мне доверяет".
+	 * @return X15Response
+	 * @throws Exception
+	 */
+	public X15ResponseList x15List(String wmid, boolean iTrust)
+			throws Exception {
+		X15RequestList req = new X15RequestList();
+		req.setRequestNum(RequestNumberGenerator.getRequestNumber());
+		req.setWmid(wmid);
+		return this.x15List(req, iTrust);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X15: <b>Просмотр</b> и изменение текущих настроек
+	 * управления "по доверию".
+	 * </p>
+	 * 
+	 * @param req
+	 *            X15RequestList
+	 * @param iTrust
+	 *            'true' - запрос "кому я доверяю", 'false' - запрос
+	 *            "кто мне доверяет".
+	 * @return X15Response
+	 * @throws Exception
+	 */
+	public X15ResponseList x15List(X15RequestList req, boolean iTrust)
+			throws Exception {
+		// общая авторизация
+		String host = WMT_HOST_CLASSIC;
+		String requestAddress;
+		if (iTrust) {
+			requestAddress = "/asp/XMLTrustListCert.asp";
+		} else {
+			requestAddress = "/asp/XMLTrustList2Cert.asp";
+		}
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X15RequestList) this.initSignature(req);
+			if (iTrust) {
+				requestAddress = "/asp/XMLTrustList.asp";
+			} else {
+				requestAddress = "/asp/XMLTrustList2.asp";
+			}
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X15ResponseListHandler hdl = new X15ResponseListHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X15: Просмотр и <b>изменение</b> текущих настроек
+	 * управления "по доверию".
+	 * </p>
+	 * 
+	 * @param req
+	 *            X15RequestList
+	 * @return X15Response
+	 * @throws Exception
+	 */
+	public X15ResponseSave x15Save(X15RequestSave req) throws Exception {
+		// общая авторизация
+		String host = WMT_HOST_CLASSIC;
+		String requestAddress = "/asp/XMLTrustSave2Cert.asp";
+		// подписываем запрос, если авторизация по схеме Classic.
+		if (this.signer != null) {
+			req = (X15RequestSave) this.initSignature(req);
+			requestAddress = "/asp/XMLTrustSave2.asp";
+		}
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X15ResponseSaveHandler hdl = new X15ResponseSaveHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
 	 * Простая форма для X16: Создание кошелька.
 	 * </p>
 	 * 
@@ -709,7 +885,7 @@ public class WmService {
 	 * @param desc
 	 *            Текстовое название кошелька, которое будет отображаться в
 	 *            интерфейсе Webmoney Keeper Classic или Light.
-	 * @return
+	 * @return X16Response
 	 * @throws Exception
 	 */
 	public X16Response x16(String wmid, char purseType, String desc)
@@ -746,6 +922,84 @@ public class WmService {
 		sendHttpRequest(host, requestAddress, req.getXmlRequest());
 		// производим разбор запроса
 		X16ResponseHandler hdl = new X16ResponseHandler();
+		ByteArrayInputStream is = new ByteArrayInputStream(
+				this.xmlResponse.getBytes());
+		this.saxParser.parse(is, hdl);
+		return hdl.getResponse();
+	}
+
+	/**
+	 * <p>
+	 * Минимальная форма для X17: Операции с арбитражными контрактами.
+	 * </p>
+	 * 
+	 * @param name
+	 *            Название контракта (не более 255 символов).
+	 * @param text
+	 *            Текст контракта. Для разделения строк в тексте контракта
+	 *            используйте: "\r\n".
+	 * 
+	 * @return X17Response
+	 * @throws Exception
+	 */
+	public X17Response x17(String name, String text) throws Exception {
+		X17Request req = new X17Request();
+		req.setName(name);
+		req.setText(text);
+		req.setCtype(1);
+		req.setAccessList(null);
+		return this.x17(req);
+	}
+
+	/**
+	 * <p>
+	 * Простая форма для X17: Операции с арбитражными контрактами.
+	 * </p>
+	 * 
+	 * @param name
+	 *            Название контракта (не более 255 символов).
+	 * @param text
+	 *            Текст контракта. Для разделения строк в тексте контракта
+	 *            используйте: "\r\n".
+	 * @param ctype
+	 *            Тип контракта. ctype=1 – контракт с открытым доступом, ctype=2
+	 *            – контракт с ограниченным доступом
+	 * @param accessList
+	 *            Список WMID пользователей, которым разрешается акцептовывать
+	 *            данный контракт.
+	 * @return X17Response
+	 * @throws Exception
+	 */
+	public X17Response x17(String name, String text, int ctype,
+			List<Wmid> accessList) throws Exception {
+		X17Request req = new X17Request();
+		req.setName(name);
+		req.setText(text);
+		req.setCtype(ctype);
+		req.setAccessList(accessList);
+		return this.x17(req);
+	}
+
+	/**
+	 * <p>
+	 * Библиотечная форма для X17: Операции с арбитражными контрактами.
+	 * </p>
+	 * 
+	 * @param req
+	 *            X17Request
+	 * @return X17Response
+	 * @throws Exception
+	 */
+	public X17Response x17(X17Request req) throws Exception {
+		// авторизация по схеме Light
+		String host = WMT_HOST_ARBITRAGE;
+		String requestAddress = "/xml/X17_CreateContract.aspx";
+		// подписываем запрос
+		req = (X17Request) this.initSignature(req);
+		// отправляем запрос в WMT
+		sendHttpRequest(host, requestAddress, req.getXmlRequest());
+		// производим разбор запроса
+		X17ResponseHandler hdl = new X17ResponseHandler();
 		ByteArrayInputStream is = new ByteArrayInputStream(
 				this.xmlResponse.getBytes());
 		this.saxParser.parse(is, hdl);

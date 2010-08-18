@@ -362,7 +362,6 @@ public class HttpRequester {
 					.getInstance(DEFAULT_SSL_PROTOCOL);
 			SecureRandom random = SecureRandom
 					.getInstance(DEFAULT_SECURE_RANDOM_ALGORITHM);
-			// используем key & trust менеджеры по-умолчанию
 			sslContext.init(keyManagers, trustManagers, random);
 			// создаем SSL-сокет
 			SSLSocketFactory fac = sslContext.getSocketFactory();

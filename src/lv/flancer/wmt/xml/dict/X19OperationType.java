@@ -16,7 +16,7 @@ public enum X19OperationType {
 	 * Возвращает значение типа по его коду.
 	 * 
 	 * @param code
-	 * @return
+	 * @return значение типа
 	 */
 	public static X19OperationType getByValue(int code) {
 		switch (code) {

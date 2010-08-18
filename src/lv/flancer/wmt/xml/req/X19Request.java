@@ -59,7 +59,6 @@ public class X19Request extends AbstractRequest {
 		result += this.requestNum;
 		result += this.operation.getType().name().toLowerCase();
 		result += this.userInfo.getWmid();
-
 		return result;
 	}
 
@@ -82,7 +81,7 @@ public class X19Request extends AbstractRequest {
 		String result = "<?xml version=\"1.0\"  encoding=\"windows-1251\"?>";
 		result += "<passport.request>";
 		result += "<reqn>" + this.requestNum + "</reqn>";
-		if (this.signerWmid != null)
+		if (this.lang != null)
 			result += "<lang>" + this.lang + "</lang>";
 		if (this.signerWmid != null)
 			result += "<signerwmid>" + this.signerWmid + "</signerwmid>";
