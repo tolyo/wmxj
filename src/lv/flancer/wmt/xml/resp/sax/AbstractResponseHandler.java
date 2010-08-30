@@ -19,11 +19,13 @@ public abstract class AbstractResponseHandler extends DefaultHandler {
 	/**
 	 * Кодировка, используемая для ответов.
 	 */
-	private static final String HTTP_CAHRSET = "windows-1251";
+	private String httpCharset = "windows-1251";
+
 	/**
 	 * Флаг, указывающий, что происходит разбор html-encoded элемента.
 	 */
 	protected boolean isHtmlEncodedBeingParsed = false;
+
 	/**
 	 * Значение текущего разобранного элемента xml-документа.
 	 */
@@ -32,7 +34,6 @@ public abstract class AbstractResponseHandler extends DefaultHandler {
 	public AbstractResponseHandler() {
 		super();
 	}
-
 	@Override
 	public void characters(char[] ch, int start, int length)
 			throws SAXException {
@@ -44,7 +45,7 @@ public abstract class AbstractResponseHandler extends DefaultHandler {
 	}
 
 	/**
-	 * Преобразует строки из кодировки {@link #HTTP_CAHRSET} в UTF-8. По
+	 * Преобразует строки из кодировки {@link #httpCharset} в UTF-8. По
 	 * неведомым мне причинам описание и адрес в ответе X4 передаются как
 	 * "![CDATA[...]]"
 	 * 
@@ -54,23 +55,13 @@ public abstract class AbstractResponseHandler extends DefaultHandler {
 	protected String decodeCharset(String encoded) {
 		String result = "";
 		try {
-			result = new String(encoded.getBytes(HTTP_CAHRSET));
+			result = new String(encoded.getBytes(httpCharset));
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (NullPointerException e) {
 			// do nothing
 		}
 		return result;
-	}
-
-	@Override
-	public void startElement(String uri, String localName, String qName,
-			Attributes attributes) throws SAXException {
-		// начало разбора HTML encoded деталей платежа
-		if (qName.equals("retdesc")) {
-			this.isHtmlEncodedBeingParsed = true;
-			this.parsedValue = "";
-		}
 	}
 
 	@Override
@@ -93,10 +84,39 @@ public abstract class AbstractResponseHandler extends DefaultHandler {
 	}
 
 	/**
+	 * Кодировка, используемая для ответов.
+	 * 
+	 * @return Кодировка, используемая для ответов.
+	 */
+	public String getHttpCharset() {
+		return httpCharset;
+	}
+
+	/**
 	 * Разобранный ответ от XML сервиса.
 	 * 
 	 * @return Разобранный ответ от XML сервиса.
 	 */
 	public abstract AbstractResponse getResponse();
+
+	/**
+	 * Кодировка, используемая для ответов.
+	 * 
+	 * @param httpCharset
+	 *            Кодировка, используемая для ответов.
+	 */
+	public void setHttpCharset(String httpCharset) {
+		this.httpCharset = httpCharset;
+	}
+
+	@Override
+	public void startElement(String uri, String localName, String qName,
+			Attributes attributes) throws SAXException {
+		// начало разбора HTML encoded деталей платежа
+		if (qName.equals("retdesc")) {
+			this.isHtmlEncodedBeingParsed = true;
+			this.parsedValue = "";
+		}
+	}
 
 }

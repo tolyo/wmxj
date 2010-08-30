@@ -314,7 +314,7 @@ public class HttpRequester {
 	 * Запрос, отправленный на сервер, сохраняется для диагностических целей.
 	 * 
 	 * @return the request Запрос, отправленный на сервер, сохраняется для
-	 *         диагностиыческих целей.
+	 *         диагностических целей.
 	 */
 	public String getRequest() {
 		return request;
@@ -367,7 +367,7 @@ public class HttpRequester {
 			SSLSocketFactory fac = sslContext.getSocketFactory();
 			result = fac.createSocket(this.host, this.port);
 		} else {
-			// не защищенное соеднинение
+			// не защищенное соединение
 			result = new Socket(this.host, this.port);
 		}
 		return result;

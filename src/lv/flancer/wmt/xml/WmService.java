@@ -353,21 +353,6 @@ public class WmService {
 	}
 
 	/**
-	 * Данная настройка нужна для аутентификации по схеме Light. Более подробно
-	 * - http://blogs.sun.com/security/entry/
-	 * vulnerability_in_tls_protocol_during и
-	 * http://java.sun.com/javase/javaseforbusiness/docs/TLSReadme.html
-	 * 
-	 * @param allow
-	 *            'true' - разрешить Unsafe Renegotiation, 'false' - наоборот.
-	 */
-	public void setAllowUnsafeRenegotiation(boolean allow) {
-		java.lang.System.setProperty(
-				"sun.security.ssl.allowUnsafeRenegotiation",
-				String.valueOf(allow));
-	}
-
-	/**
 	 * Выполняет непосредственную отправку HTTP-запроса на сервис WMT XML.
 	 * 
 	 * @param host
@@ -430,6 +415,21 @@ public class WmService {
 		int start = this.httpResponse.indexOf("<?xml version=");
 		this.xmlResponse = this.httpResponse.substring(start);
 		return this.httpResponse;
+	}
+
+	/**
+	 * Данная настройка нужна для аутентификации по схеме Light. Более подробно
+	 * - http://blogs.sun.com/security/entry/
+	 * vulnerability_in_tls_protocol_during и
+	 * http://java.sun.com/javase/javaseforbusiness/docs/TLSReadme.html
+	 * 
+	 * @param allow
+	 *            'true' - разрешить Unsafe Renegotiation, 'false' - наоборот.
+	 */
+	public void setAllowUnsafeRenegotiation(boolean allow) {
+		java.lang.System.setProperty(
+				"sun.security.ssl.allowUnsafeRenegotiation",
+				String.valueOf(allow));
 	}
 
 	/**
@@ -659,7 +659,7 @@ public class WmService {
 	 * @throws Exception
 	 */
 	public X11Response x11(X11Request req) throws Exception {
-		// авторизация по схеме Light
+		// авторизация по обоим схемам
 		String host = WMT_HOST_PASSPORT;
 		String requestAddress = "/asp/XMLGetWMPassport.asp";
 		// подписываем запрос, если авторизация по схеме Classic.
@@ -1394,6 +1394,9 @@ public class WmService {
 		sendHttpRequest(host, requestAddress, req.getXmlRequest());
 		// производим разбор запроса
 		X4ResponseHandler hdl = new X4ResponseHandler();
+		// для Light и Classic версий кодировки различаются
+		String charset = (this.signer != null) ? "windows-1251" : "UTF-8";
+		hdl.setHttpCharset(charset);
 		ByteArrayInputStream is = new ByteArrayInputStream(
 				this.xmlResponse.getBytes());
 		this.saxParser.parse(is, hdl);

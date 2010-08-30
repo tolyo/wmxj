@@ -2,8 +2,6 @@ package lv.flancer.wmt.xml.wmsigner;
 
 import java.security.MessageDigest;
 
-import sun.security.provider.MD4;
-
 /**
  * Утилиты, используемые в пакете.
  * 
@@ -21,7 +19,7 @@ public class Utils {
 	 *         последовательности байтов.
 	 */
 	public static byte[] calcMd4(byte[] input) {
-		MessageDigest md4 = MD4.getInstance();
+		MessageDigest md4 = new Md4();
 		md4.reset();
 		md4.update(input);
 		byte[] result = md4.digest();
