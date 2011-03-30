@@ -7,7 +7,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -95,6 +97,10 @@ public class HttpRequester {
 	 */
 	private InetAddress host;
 	/**
+	 * Менеджеры ключей для установления защищенного соединения (SSL).
+	 */
+	private KeyManager[] keyManagers = null;
+	/**
 	 * Порт сервера для установления соединения.
 	 */
 	private int port;
@@ -113,19 +119,19 @@ public class HttpRequester {
 	 */
 	private Charset responseCharset;
 	/**
-	 * Менеджеры ключей для установления защищенного соединения (SSL).
+	 * Флаг, указывающий на необходимость использования шифрования (SSL) при
+	 * выполнении запроса.
 	 */
-	private KeyManager[] keyManagers = null;
+	private boolean securedResuest;
+	/**
+	 * Timeout (в мсек.) для установления соединения. По умолчанию - 30000.
+	 */
+	private int timeout = 30000;
 	/**
 	 * Менеджеры доверенных сертификатов для установления защищенного соединения
 	 * (SSL).
 	 */
 	private TrustManager[] trustManagers = null;
-	/**
-	 * Флаг, указывающий на необходимость использования шифрования (SSL) при
-	 * выполнении запроса.
-	 */
-	private boolean securedResuest;
 
 	/**
 	 * Создает экземпляр класса с кодировкой UTF-8 для запроса/ответа.
@@ -343,6 +349,16 @@ public class HttpRequester {
 	}
 
 	/**
+	 * Timeout (в мсек.) для установления соединения. По умолчанию - 30000.
+	 * 
+	 * @return Timeout (в мсек.) для установления соединения. По умолчанию -
+	 *         30000.
+	 */
+	public int getTimeout() {
+		return timeout;
+	}
+
+	/**
 	 * Инициализирует и возвращает сокет, соединенный с удаленным сервером. В
 	 * зависимости от настроек, сокет может быть защищенный (SSLSocket) или
 	 * простой.
@@ -365,12 +381,26 @@ public class HttpRequester {
 			sslContext.init(keyManagers, trustManagers, random);
 			// создаем SSL-сокет
 			SSLSocketFactory fac = sslContext.getSocketFactory();
-			result = fac.createSocket(this.host, this.port);
+			Socket sock = fac.createSocket();
+			SocketAddress endpoint = new InetSocketAddress(this.host, this.port);
+			sock.connect(endpoint, this.timeout);
+			result = sock;
 		} else {
 			// не защищенное соединение
 			result = new Socket(this.host, this.port);
 		}
 		return result;
+	}
+
+	/**
+	 * Флаг, указывающий на необходимость использования шифрования (SSL) при
+	 * выполнении запроса.
+	 * 
+	 * @return Флаг, указывающий на необходимость использования шифрования (SSL)
+	 *         при выполнении запроса.
+	 */
+	public boolean isSecuredResuest() {
+		return securedResuest;
 	}
 
 	/**
@@ -413,17 +443,6 @@ public class HttpRequester {
 			tmf.init(keyStore);
 			this.trustManagers = tmf.getTrustManagers();
 		}
-	}
-
-	/**
-	 * Флаг, указывающий на необходимость использования шифрования (SSL) при
-	 * выполнении запроса.
-	 * 
-	 * @return Флаг, указывающий на необходимость использования шифрования (SSL)
-	 *         при выполнении запроса.
-	 */
-	public boolean isSecuredResuest() {
-		return securedResuest;
 	}
 
 	/**
@@ -534,6 +553,17 @@ public class HttpRequester {
 	 */
 	public void setSecuredResuest(boolean securedResuest) {
 		this.securedResuest = securedResuest;
+	}
+
+	/**
+	 * Timeout (в мсек.) для установления соединения. По умолчанию - 30000.
+	 * 
+	 * @param timeout
+	 *            Timeout (в мсек.) для установления соединения. По умолчанию -
+	 *            30000.
+	 */
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 
 }
