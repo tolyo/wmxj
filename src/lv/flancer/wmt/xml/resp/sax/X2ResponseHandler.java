@@ -101,10 +101,12 @@ public class X2ResponseHandler extends AbstractResponseHandler {
 		// задаем Id операции
 		if (qName.equals("operation")) {
 			this.response.setId(attributes.getValue("id"));
-			this.response.setTs(attributes.getValue("ts"));
+			//this.response.setTs(attributes.getValue("ts"));
+			//аттрибут ts может отсутствовать
+			this.response.setTs((attributes.getValue("ts") == null) ? "0" : attributes.getValue("ts"));
 		}
 		// начало разбора HTML encoded деталей платежа
-		if (qName.equals("desc")) {
+		if (qName.equals("desc")) {	
 			this.isHtmlEncodedBeingParsed = true;
 			this.parsedValue = "";
 		}
