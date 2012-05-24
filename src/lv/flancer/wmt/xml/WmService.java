@@ -13,79 +13,10 @@ import java.util.List;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import lv.flancer.wmt.xml.dict.PurseNumber;
-import lv.flancer.wmt.xml.dict.WmDate;
-import lv.flancer.wmt.xml.dict.Wmid;
-import lv.flancer.wmt.xml.dict.X18AuthType;
-import lv.flancer.wmt.xml.dict.X19Operation;
-import lv.flancer.wmt.xml.dict.X19UserInfo;
-import lv.flancer.wmt.xml.dict.X20ClientNumberType;
-import lv.flancer.wmt.xml.dict.X20SmsType;
-import lv.flancer.wmt.xml.req.RequestNumberGenerator;
-import lv.flancer.wmt.xml.req.X10Request;
-import lv.flancer.wmt.xml.req.X11Request;
-import lv.flancer.wmt.xml.req.X13Request;
-import lv.flancer.wmt.xml.req.X14Request;
-import lv.flancer.wmt.xml.req.X15RequestList;
-import lv.flancer.wmt.xml.req.X15RequestSave;
-import lv.flancer.wmt.xml.req.X16Request;
-import lv.flancer.wmt.xml.req.X17Request;
-import lv.flancer.wmt.xml.req.X18Request;
-import lv.flancer.wmt.xml.req.X19Request;
-import lv.flancer.wmt.xml.req.X1Request;
-import lv.flancer.wmt.xml.req.X20InitiationRequest;
-import lv.flancer.wmt.xml.req.X20ConfirmationRequest;
-import lv.flancer.wmt.xml.req.X2Request;
-import lv.flancer.wmt.xml.req.X3Request;
-import lv.flancer.wmt.xml.req.X4Request;
-import lv.flancer.wmt.xml.req.X5Request;
-import lv.flancer.wmt.xml.req.X6Request;
-import lv.flancer.wmt.xml.req.X7Request;
-import lv.flancer.wmt.xml.req.X8Request;
-import lv.flancer.wmt.xml.req.X9Request;
-import lv.flancer.wmt.xml.req.XmlRequest;
-import lv.flancer.wmt.xml.resp.X10Response;
-import lv.flancer.wmt.xml.resp.X11Response;
-import lv.flancer.wmt.xml.resp.X13Response;
-import lv.flancer.wmt.xml.resp.X14Response;
-import lv.flancer.wmt.xml.resp.X15ResponseList;
-import lv.flancer.wmt.xml.resp.X15ResponseSave;
-import lv.flancer.wmt.xml.resp.X16Response;
-import lv.flancer.wmt.xml.resp.X17Response;
-import lv.flancer.wmt.xml.resp.X18Response;
-import lv.flancer.wmt.xml.resp.X19Response;
-import lv.flancer.wmt.xml.resp.X1Response;
-import lv.flancer.wmt.xml.resp.X20InitiationResponse;
-import lv.flancer.wmt.xml.resp.X20ConfirmationResponse;
-import lv.flancer.wmt.xml.resp.X2Response;
-import lv.flancer.wmt.xml.resp.X3Response;
-import lv.flancer.wmt.xml.resp.X4Response;
-import lv.flancer.wmt.xml.resp.X5Response;
-import lv.flancer.wmt.xml.resp.X6Response;
-import lv.flancer.wmt.xml.resp.X7Response;
-import lv.flancer.wmt.xml.resp.X8Response;
-import lv.flancer.wmt.xml.resp.X9Response;
-import lv.flancer.wmt.xml.resp.sax.X10ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X11ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X13ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X14ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X15ResponseListHandler;
-import lv.flancer.wmt.xml.resp.sax.X15ResponseSaveHandler;
-import lv.flancer.wmt.xml.resp.sax.X16ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X17ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X18ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X19ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X1ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X20InitiationResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X20ConfirmationResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X2ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X3ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X4ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X5ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X6ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X7ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X8ResponseHandler;
-import lv.flancer.wmt.xml.resp.sax.X9ResponseHandler;
+import lv.flancer.wmt.xml.dict.*;
+import lv.flancer.wmt.xml.req.*;
+import lv.flancer.wmt.xml.resp.*;
+import lv.flancer.wmt.xml.resp.sax.*;
 import lv.flancer.wmt.xml.wmsigner.CannotLoadKeysException;
 import lv.flancer.wmt.xml.wmsigner.KwmCorruptedException;
 import lv.flancer.wmt.xml.wmsigner.WmSigner;
@@ -418,8 +349,10 @@ public class WmService {
 		} while ((this.httpResponse == null) && (i < httpRetries));
 		this.httpRequest = httpReq.getRequest();
 		// System.out.println(this.httpRequest);
-		// System.out.println(this.httpResponse);
-		// вырезаем текст xml из http-ответа.
+		// System.out.println(this.httpResponse);		
+                if(this.httpResponse == null)
+                    throw new IOException("No answer from host");
+                // вырезаем текст xml из http-ответа.
 		int start = this.httpResponse.indexOf("<?xml version=");
 		this.xmlResponse = this.httpResponse.substring(start);
 		return this.httpResponse;
@@ -1438,7 +1371,190 @@ public class WmService {
                 this.saxParser.parse(is, hdl);
                 return hdl.getResponse();
         }
-                
+         
+        /**
+	 * <p>
+	 * Простая форма для X21TrustRequest: Установка по СМС доверия на 
+         * оплату в пользу продавца
+         * 1-й запрос - запрос на доверие у владельца кошелька.          
+	 * </p>
+	 * 
+	 * @param payeePurse
+	 *              Номер кошелька, на который продавец будет принимать 
+         *              оплату путем перевода средств с кошелька покупателя при 
+         *              помощи интерфейса Х2.
+         * 
+         * @param dayLimit
+	 *              Максимальная сумма платежей, которую продавец сможет перевести 
+         *              от покупателя в течении одного календарного дня в том же типе 
+         *              WM-валюты, что и кошелек продавца lmi_payee_purse. Сумма 
+         *              должна быть больше или равна нулю, дробная часть отделяется 
+         *              точкой. Если сумма равна нулю, то лимита на оплату в день не 
+         *              существует. При этом, как минимум один из трех лимитов 
+         *              (дневной, недельный, месячный) должен быть обязательно указан, 
+         *              т.е. значения всех трех лимитов не должны равняться нулю 
+         *              (недопустимо полное отсутствие лимитов). При этом, максимальная 
+         *              сумма лимита, которую можно установить с помощью данного 
+         *              интерфейса, такая же, как и в статье Финансовые ограничения 
+         *              WebMoney Keeper Mini для Кипера Мини с непроверенным телефоном. 
+         *              Если по каким-либо причинам магазину или сервису понадобится 
+         *              большая сумма, то об этом надо сообщить покупателю, чтобы он 
+         *              поднял лимит самостоятельно в настройках доверия на 
+         *              security.webmoney.ru
+         * 
+         * @param weekLimit
+	 *              См. описание lmi_day_limit с заменой календарного дня на календарную неделю.
+         * 
+         * @param monthLimit
+	 *              См. описание lmi_day_limit с заменой календарного дня на календарный месяц.
+         * 
+         * @param clientNumber
+	 *              В этом параметре могут быть указаны на выбор: 
+         *              - Мобильный телефон с кодом страны и города (допустимы только 
+         *              цифры, без плюсов, скобок и других символов). Например, для 
+         *              России – 79167777777, а для Украины – 380527777777) 
+         *              - WM-идентификатор покупателя (строго 12 цифр)
+         *              - WM-кошелек покупателя (строго большая буква типа WM-кошелька и 12 цифр)
+         *              - E-mail покупателя. При этом, интерфейс автоматически найдет 
+         *              WM-идентификатор, с которого может быть произведена оплата покупателем.
+         * 
+         * @param clientNumberType
+	 *              Тип переданных в lmi_clientnumber данных.
+         * 
+         * @param smsType
+	 *              Данное поле определяет способы подтверждения покупателем 
+         *              устанавливаемого доверия. (SMS, USSD)
+         * 
+         * @param lang
+	 *              В данном параметре передается значение ru-RU или en-US, 
+         *              соответственно, для русского или английского языка интерфейса. 
+         *              Данное значение определяет и язык отправляемых пользователю 
+         *              СМС- или USSD-запросов, и язык ответов в теге userdesc.
+         * 
+	 * @return X21TrustRequestResponse
+	 * @throws Exception
+	 */
+        public X21TrustRequestResponse X21TrustRequest(String payeePurse, 
+                    double dayLimit, double weekLimit, double monthLimit, 
+                    String clientNumber, X21ClientNumberType clientNumberType, 
+                    X21SmsType smsType, String lang) 
+                        throws Exception {
+                        
+                X21TrustRequest req = new X21TrustRequest();    
+                req.setPayeePurse(payeePurse);
+                req.setDayLimit(dayLimit);
+                req.setWeekLimit(weekLimit);
+                req.setMonthLimit(monthLimit);
+                req.setClientNumber(clientNumber);
+                req.setClientNumberType(clientNumberType);
+                req.setSmsType(smsType);
+                req.setLang(lang);                                		
+		return this.X21TrustRequest(req);
+        }
+        
+        /**
+	 * <p>
+	 * Библиотечная форма для X21TrustRequest: Установка по СМС доверия на 
+         * оплату в пользу продавца
+         * 1-й запрос - запрос на доверие у владельца кошелька.          
+	 * </p>
+	 * 
+	 * @param req
+	 *            X21TrustRequest
+	 * @return X21TrustRequestResponse
+	 * @throws Exception
+	 */
+        public X21TrustRequestResponse X21TrustRequest(X21TrustRequest req) 
+                    throws Exception {
+                        
+                String host = WMT_HOST_MERCHANT;
+                String requestAddress = "/conf/xml/XMLTrustRequest.asp";
+                                
+                // подписываем запрос.                
+                if (this.signer != null) {                
+                    req = (X21TrustRequest) this.initSignature(req);
+                } 
+
+                // отправляем запрос в WMT
+                sendHttpRequest(host, requestAddress, req.getXmlRequest());
+                // производим разбор запроса
+                X21TrustRequestResponseHandler hdl = new X21TrustRequestResponseHandler();
+                ByteArrayInputStream is = new ByteArrayInputStream(
+                                this.xmlResponse.getBytes());
+                this.saxParser.parse(is, hdl);
+                return hdl.getResponse();
+        }
+        
+        /**
+	 * <p>
+	 * Простая форма для X21TrustConfirm: Установка по СМС доверия на 
+         * оплату в пользу продавца
+         * 2-й запрос - подтверждение доверия у владельца кошелька. 
+         * Ответ на второй запрос.             
+	 * </p>
+	 * 
+	 * @param purseID
+	 *          Номер запроса из ответа в предыдущем вызове.
+         * 
+         * @param clientNumberCode
+	 *          В данном поле передается цифровой код, который покупатель 
+         *          получил на мобильный телефон для подтверждения платежа. 
+         *          Если СМС не отправлялась покупателю (был отправлен USSD 
+         *          запрос), то здесь необходимо передать код со значением 0.
+         *         
+         * @param lang
+	 *          В данном параметре передается значение ru-RU или en-US 
+         *          соответственно для русского или английского языка интерфейса. 
+         *          Данное значение определяет и язык отправляемых пользователю СМС 
+         *          (USSD) запросов и язык ответов в теге userdesc.
+         * 
+	 * @return X21TrustRequestResponse
+	 * @throws Exception
+	 */
+        public X21TrustConfirmResponse X21TrustConfirm(long purseID, String clientNumberCode, String lang) 
+                        throws Exception {
+                        
+                X21TrustConfirmRequest req = new X21TrustConfirmRequest();
+                req.setPurseID(purseID);
+                req.setClientNumberCode(clientNumberCode);                
+                req.setLang(lang);                                		
+		return this.X21TrustConfirm(req);
+        }
+        
+        /**
+	 * <p>
+	 * Библиотечная форма для X21TrustConfirm: Установка по СМС доверия на 
+         * оплату в пользу продавца
+         * 2-й запрос - подтверждение доверия у владельца кошелька. 
+         * Ответ на второй запрос.          
+	 * </p>
+	 * 
+	 * @param req
+	 *            X21TrustConfirmRequest
+	 * @return X21TrustConfirmResponse
+	 * @throws Exception
+	 */
+        public X21TrustConfirmResponse X21TrustConfirm(X21TrustConfirmRequest req) 
+                    throws Exception {
+                        
+                String host = WMT_HOST_MERCHANT;
+                String requestAddress = "/conf/xml/XMLTrustConfirm.asp";
+                                
+                // подписываем запрос.                
+                if (this.signer != null) {                
+                    req = (X21TrustConfirmRequest) this.initSignature(req);
+                } 
+
+                // отправляем запрос в WMT
+                sendHttpRequest(host, requestAddress, req.getXmlRequest());
+                // производим разбор запроса
+                X21TrustConfirmResponseHandler hdl = new X21TrustConfirmResponseHandler();
+                ByteArrayInputStream is = new ByteArrayInputStream(
+                                this.xmlResponse.getBytes());
+                this.saxParser.parse(is, hdl);
+                return hdl.getResponse();
+        }
+        
 	/**
 	 * <p>
 	 * Минимальная форма для X3: Получение истории операций по кошельку,
